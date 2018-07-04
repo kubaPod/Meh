@@ -42,10 +42,13 @@ Using `MThrowAll` will issue a message too.
 ```Mathematica
 MCatch[     MThrow["500", General::invty, Method]    ]
     
-  (* Failure["500", <|"MessageTemplate" :> General::invty, "MessageParameters" -> {Method}|> ] *)    
+  (* Failure["500", <|"MessageTemplate" :> General::invty, "MessageParameters" -> {Method}|> ] *)
+      
 ```    
-   
-But it also has other utilities. `MHandleResult` is an extension to If/Switch.
+Replace MThrow with MThrowAll and a message will be issued.
+ 
+ 
+But ``Meh` `` has also other utilities. `MHandleResult` is an extension to If/Switch.
 It has nice operator form   
    
 ```Mathematica    
@@ -59,7 +62,7 @@ MCatch[
      , "MessageParameters" -> {0, {"string output from 3rd party function"}}|> ]
   *)
   
-  (* replace MThrow with MThrowAll and a message will be issued *)
+  
  
 ```
   
@@ -73,7 +76,7 @@ MCatch[
     (* Failure["General", <|"Message" -> "$Failed"|>] *)
 ```    
 
-`MFailureQ` will be more sophisticated but currently it fixes the problem that build in `FailureQ` does not recognize `$Canceled` as a failure.
+`MFailureQ` will be more sophisticated but currently it fixes the problem that built-in `FailureQ` does not recognize `$Canceled` as a failure.
 
 ```Mathematica
 MFailureQ /@ {"test", $Failed, $Aborted, $Canceled, Failure["any", "Message" -> "Generic message"]}

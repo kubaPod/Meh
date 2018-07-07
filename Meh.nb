@@ -3,29 +3,673 @@ Notebook[{
 Cell[CellGroupData[{
 Cell["Meh", "Title",ExpressionUUID->"c893238b-fc00-4d22-8d3f-17b9c649a6b7"],
 
+Cell[CellGroupData[{
+
 Cell[BoxData[
  RowBox[{"PacletDirectoryAdd", " ", "@", " ", 
   RowBox[{"NotebookDirectory", "[", "]"}]}]], "Input",
- CellLabel->"In[56]:=",ExpressionUUID->"1486e51e-309d-4292-8b01-e4b10078e779"],
+ CellLabel->"In[17]:=",ExpressionUUID->"1486e51e-309d-4292-8b01-e4b10078e779"],
+
+Cell[BoxData[
+ RowBox[{"{", "\<\"E:\\\\Idea Projects\\\\Meh\\\\\"\>", "}"}]], "Output",
+ CellLabel->"Out[17]=",ExpressionUUID->"debf3771-2c15-4e4f-beaa-455f4f9ffa82"]
+}, Open  ]],
+
+Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"SetDirectory", " ", "@", " ", 
   RowBox[{"NotebookDirectory", "[", "]"}]}]], "Input",
- CellLabel->"In[57]:=",ExpressionUUID->"0c7abb7b-3dc3-4128-9afe-7a43492cd48c"],
+ CellLabel->"In[18]:=",ExpressionUUID->"0c7abb7b-3dc3-4128-9afe-7a43492cd48c"],
+
+Cell[BoxData["\<\"E:\\\\Idea Projects\\\\Meh\"\>"], "Output",
+ CellLabel->"Out[18]=",ExpressionUUID->"6cb0ddff-e4dd-4b0a-bec9-b0308466cf53"]
+}, Open  ]],
 
 Cell[BoxData[
  RowBox[{"<<", "Meh`"}]], "Input",
- CellLabel->"In[58]:=",ExpressionUUID->"63f4d4f0-5092-4b69-8a08-9bfe696193b2"],
+ CellLabel->"In[19]:=",ExpressionUUID->"63f4d4f0-5092-4b69-8a08-9bfe696193b2"],
+
+Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"TestReport", " ", "@", " ", "\"\<Tests/MehTest.wl\>\""}]], "Input",
- CellLabel->"In[87]:=",ExpressionUUID->"69b91f91-d5c0-467d-affa-c2ff9733acab"]
+ CellLabel->"In[20]:=",ExpressionUUID->"69b91f91-d5c0-467d-affa-c2ff9733acab"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{
+   TagBox["TestReportObject",
+    "SummaryHead"], "[", 
+   DynamicModuleBox[{Typeset`open$$ = False, Typeset`embedState$$ = "Ready"}, 
+    TemplateBox[{PaneSelectorBox[{False -> GridBox[{{
+            PaneBox[
+             ButtonBox[
+              DynamicBox[
+               FEPrivate`FrontEndResource[
+               "FEBitmaps", "SquarePlusIconMedium"]], 
+              ButtonFunction :> (Typeset`open$$ = True), Appearance -> None, 
+              Evaluator -> Automatic, Method -> "Preemptive"], 
+             Alignment -> {Center, Center}, ImageSize -> 
+             Dynamic[{
+               Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                AbsoluteCurrentValue[Magnification]}]], 
+            GraphicsBox[{
+              InsetBox[
+               BoxData[
+                FormBox[
+                 PaneBox[
+                  DynamicBox[
+                   FEPrivate`FrontEndResource[
+                   "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                  ImageSize -> 
+                  Dynamic[{
+                    Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                    AbsoluteCurrentValue[Magnification]}]], 
+                 TraditionalForm]]]}, PlotRange -> {{0, 1}, {0, 1}}, 
+             Background -> GrayLevel[0.93], Axes -> False, AspectRatio -> 1, 
+             ImageSize -> 
+             Dynamic[{
+               Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                AbsoluteCurrentValue[Magnification]}], Frame -> True, 
+             FrameTicks -> None, FrameStyle -> Directive[
+               Thickness[Tiny], 
+               GrayLevel[0.55]]], 
+            GridBox[{{
+               RowBox[{
+                 TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["\"Test Report: MehTest.wl\"", "SummaryItem"]}], 
+               "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                  TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                  "SummaryItem"]}], 
+               RowBox[{
+                 TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["22", "SummaryItem"]}]}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Rows" -> {{Top}}}, AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}], True -> GridBox[{{
+            PaneBox[
+             ButtonBox[
+              DynamicBox[
+               FEPrivate`FrontEndResource[
+               "FEBitmaps", "SquareMinusIconMedium"]], 
+              ButtonFunction :> (Typeset`open$$ = False), Appearance -> None, 
+              Evaluator -> Automatic, Method -> "Preemptive"], 
+             Alignment -> {Center, Center}, ImageSize -> 
+             Dynamic[{
+               Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                AbsoluteCurrentValue[Magnification]}]], 
+            GraphicsBox[{
+              InsetBox[
+               BoxData[
+                FormBox[
+                 PaneBox[
+                  DynamicBox[
+                   FEPrivate`FrontEndResource[
+                   "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                  ImageSize -> 
+                  Dynamic[{
+                    Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                    AbsoluteCurrentValue[Magnification]}]], 
+                 TraditionalForm]]]}, PlotRange -> {{0, 1}, {0, 1}}, 
+             Background -> GrayLevel[0.93], Axes -> False, AspectRatio -> 1, 
+             ImageSize -> 
+             Dynamic[{
+               Automatic, 3.5 CurrentValue["FontCapHeight"]/
+                AbsoluteCurrentValue[Magnification]}], Frame -> True, 
+             FrameTicks -> None, FrameStyle -> Directive[
+               Thickness[Tiny], 
+               GrayLevel[0.55]]], 
+            GridBox[{{
+               RowBox[{
+                 TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["\"Test Report: MehTest.wl\"", "SummaryItem"]}], 
+               "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                  TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                  "SummaryItem"]}], 
+               RowBox[{
+                 TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["22", "SummaryItem"]}]}, {
+               RowBox[{
+                 TagBox["\"Succeeded: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["22", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Failed: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox[
+                 "\"Failed with wrong results: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox[
+                 "\"Failed with messages: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Failed with errors: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Rows" -> {{Top}}}, AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}]}, 
+       Dynamic[Typeset`open$$], ImageSize -> Automatic]},
+     "SummaryPanel"],
+    DynamicModuleValues:>{}], "]"}],
+  TestReportObject[
+   Association[
+   "Title" -> "Test Report: MehTest.wl", "TimeElapsed" -> 
+    Quantity[0.31, "Seconds"], "TestsSucceededCount" -> 22, 
+    "TestsFailedCount" -> 0, "TestsFailedWrongResultsCount" -> 0, 
+    "TestsFailedWithMessagesCount" -> 0, "TestsFailedWithErrorsCount" -> 0, 
+    "Aborted" -> False, "TestResults" -> Association[1 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 1, "TestID" -> None, "Outcome" -> 
+         "Success", "Input" -> HoldForm[
+           Map[Meh`MFailureQ, {$Failed, $Aborted, $Canceled, 
+             Failure["any", "Message" -> "Generic message"]}]], 
+         "ExpectedOutput" -> HoldForm[{True, True, True, True}], 
+         "ActualOutput" -> HoldForm[{True, True, True, True}], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[112, "Bytes"]]], 2 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 2, "TestID" -> 
+         "cdeccebc-bfed-446e-a7ce-58e8a0ae48cc", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Map[Meh`MThrow, {$Failed, $Canceled, $Aborted}]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ActualOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[672, "Bytes"]]], 3 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 3, "TestID" -> 
+         "e2481006-2edb-4efe-964d-24c0ab93a453", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Map[
+            Composition[
+            Meh`MCatch, Meh`MThrow], {$Failed, $Canceled, $Aborted, 
+             Failure[], 
+             Failure["General", 
+              Association[
+              "MessageTemplate" -> "``", 
+               "MessageParameters" -> {1}]], $CellContext`whatever}]], 
+         "ExpectedOutput" -> HoldForm[{
+            Failure["General", 
+             Association["Message" -> "$Failed"]], 
+            Failure["General", 
+             Association["Message" -> "$Canceled"]], 
+            Failure["General", 
+             Association["Message" -> "$Aborted"]], 
+            Failure[], 
+            Failure["General", 
+             Association[
+             "MessageTemplate" -> "``", 
+              "MessageParameters" -> {1}]], $CellContext`whatever}], 
+         "ActualOutput" -> HoldForm[{
+            Failure["General", 
+             Association["Message" -> "$Failed"]], 
+            Failure["General", 
+             Association["Message" -> "$Canceled"]], 
+            Failure["General", 
+             Association["Message" -> "$Aborted"]], 
+            Failure[], 
+            Failure["General", 
+             Association[
+             "MessageTemplate" -> "``", 
+              "MessageParameters" -> {1}]], $CellContext`whatever}], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[1576, "Bytes"]]], 
+      4 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 4, "TestID" -> 
+         "83b0a819-0923-4bf3-b15a-f0ea5c20943d", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow[
+             Failure["tag", 
+              Association["Message" -> "static"]]]]], "ExpectedOutput" -> 
+         HoldForm[
+           Failure["tag", 
+            Association["Message" -> "static"]]], "ActualOutput" -> HoldForm[
+           Failure["tag", 
+            Association["Message" -> "static"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[352, "Bytes"]]], 5 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 5, "TestID" -> 
+         "2f9c8c4a-3296-488e-9c88-a57174cb1839", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow[
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure[General, 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ActualOutput" -> HoldForm[
+           Failure[General, 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0.001`4.15051499783199, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0.015000000000000568`, "Seconds"], "MemoryUsed" -> 
+         Quantity[528, "Bytes"]]], 6 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 6, "TestID" -> 
+         "c51e6c29-02b4-45d4-999e-9ef8364a3afc", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrowAll[
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure[General, 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ActualOutput" -> HoldForm[
+           Failure[General, 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ExpectedMessages" -> {
+           HoldForm[
+            MessageName[General, "argt"]]}, "ActualMessages" -> {
+           HoldForm[
+            Message[
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]}, 
+         "AbsoluteTimeUsed" -> Quantity[0.001`4.150514997831987, "Seconds"], 
+         "CPUTimeUsed" -> Quantity[0., "Seconds"], "MemoryUsed" -> 
+         Quantity[3232, "Bytes"]]], 7 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 7, "TestID" -> 
+         "ed8d64e4-75b0-4c68-bda0-fc635786a82f", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow["custom tag", 
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ActualOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[576, "Bytes"]]], 8 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 8, "TestID" -> 
+         "568d41cf-8ee3-4805-a223-fc8346d00ba4", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrowAll["custom tag", 
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ActualOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}]]], 
+         "ExpectedMessages" -> {
+           HoldForm[
+            MessageName[General, "argt"]]}, "ActualMessages" -> {
+           HoldForm[
+            Message[
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4]]}, 
+         "AbsoluteTimeUsed" -> Quantity[0``7.1505149978319915, "Seconds"], 
+         "CPUTimeUsed" -> Quantity[0., "Seconds"], "MemoryUsed" -> 
+         Quantity[832, "Bytes"]]], 9 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 9, "TestID" -> 
+         "1b2f7ddc-b2f7-42bb-82a4-de304864bedd", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow[
+             MessageName[$CellContext`foo, "argx"], 
+             Association["arg" -> $CellContext`bar]]]], "ExpectedOutput" -> 
+         HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar]]]],
+          "ActualOutput" -> HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar]]]],
+          "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> Quantity[0``7.1505149978319915, "Seconds"], 
+         "CPUTimeUsed" -> Quantity[0., "Seconds"], "MemoryUsed" -> 
+         Quantity[664, "Bytes"]]], 10 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 10, "TestID" -> 
+         "34f9f256-3b1f-41ad-b584-76864bb1b39b", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow[$CellContext`bar, 
+             MessageName[$CellContext`foo, "argx"], 
+             Association["arg" -> $CellContext`bar]]]], "ExpectedOutput" -> 
+         HoldForm[
+           Failure[$CellContext`bar, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar]]]],
+          "ActualOutput" -> HoldForm[
+           Failure[$CellContext`bar, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar]]]],
+          "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> Quantity[0``7.1505149978319915, "Seconds"], 
+         "CPUTimeUsed" -> Quantity[0., "Seconds"], "MemoryUsed" -> 
+         Quantity[664, "Bytes"]]], 11 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 11, "TestID" -> 
+         "d4b3e988-550f-4fe5-9212-c7ffc737c2b3", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow[$CellContext`bar, 
+             MessageName[$CellContext`foo, "argx"], 
+             Association["arg" -> $CellContext`bar], 
+             Association["Payload" -> "additional information"]]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure[$CellContext`bar, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar], 
+             "Payload" -> "additional information"]]], "ActualOutput" -> 
+         HoldForm[
+           Failure[$CellContext`bar, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "argx"], 
+             "MessageParameters" -> Association["arg" -> $CellContext`bar], 
+             "Payload" -> "additional information"]]], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[736, "Bytes"]]], 
+      12 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 12, "TestID" -> 
+         "1a6f5d87-c8ec-4dda-b0b3-efcd7e9cd443", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrow["custom tag", 
+             MessageName[General, "argt"], $CellContext`foo, 2, 3, 4, 
+             Association["Payload" -> "additional information"]]]], 
+         "ExpectedOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}, "Payload" -> 
+             "additional information"]]], "ActualOutput" -> HoldForm[
+           Failure["custom tag", 
+            Association[
+            "MessageTemplate" :> MessageName[General, "argt"], 
+             "MessageParameters" -> {$CellContext`foo, 2, 3, 4}, "Payload" -> 
+             "additional information"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[584, "Bytes"]]], 
+      13 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 13, "TestID" -> 
+         "bf83f8f6-2d77-47b2-96b0-7dc4750e778d", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[Meh`MHandleResult[][$Aborted]; 1]], "ExpectedOutput" -> 
+         HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Aborted"]]], "ActualOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Aborted"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[688, "Bytes"]]], 
+      14 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 14, "TestID" -> 
+         "aa27e31c-8219-4ecb-861c-0b36c679cf74", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MHandleResult[
+             Except[
+              Blank[String]], 
+             Function[$CellContext`res, 
+              Meh`MThrow[
+               MessageName[$CellContext`foo, "string"], 
+               Head[$CellContext`res], 
+               Blank[String]]]][{"string"}]]], "ExpectedOutput" -> HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ActualOutput" -> HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[728, "Bytes"]]], 
+      15 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 15, "TestID" -> 
+         "1754dc50-0240-492f-8a31-10ca32b964cd", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MHandleResult[
+             Except[
+              Blank[String]], 
+             Function[$CellContext`res, 
+              Meh`MThrowAll[
+               MessageName[$CellContext`foo, "string"], 
+               Head[$CellContext`res], 
+               Blank[String]]]][{"string"}]]], "ExpectedOutput" -> HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ActualOutput" -> HoldForm[
+           Failure[$CellContext`foo, 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ExpectedMessages" -> {
+           HoldForm[
+            MessageName[$CellContext`foo, "string"]]}, "ActualMessages" -> {
+           HoldForm[
+            Message[
+             MessageName[$CellContext`foo, "string"], List, 
+             Blank[String]]]}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[1064, "Bytes"]]], 
+      16 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 16, "TestID" -> 
+         "1754dc50-0240-492f-8a31-10ca32b964cd", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MHandleResult[
+             Except[
+              Blank[String]], 
+             Function[$CellContext`res, 
+              Meh`MThrowAll[
+               MessageName[$CellContext`foo, "string"], 
+               Head[$CellContext`res], 
+               Blank[String]]]]["string"]]], "ExpectedOutput" -> 
+         HoldForm["string"], "ActualOutput" -> HoldForm["string"], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[344, "Bytes"]]], 
+      17 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 17, "TestID" -> 
+         "1754dc50-0240-492f-8a31-10ca32b964cd", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MHandleResult[
+             Except[
+              Blank[String]], 
+             Function[$CellContext`res, 
+              Meh`MThrowAll["500", 
+               MessageName[$CellContext`foo, "string"], 
+               Head[$CellContext`res], 
+               Blank[String]]]]["string"]]], "ExpectedOutput" -> 
+         HoldForm["string"], "ActualOutput" -> HoldForm["string"], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0.001`4.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[272, "Bytes"]]], 
+      18 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 18, "TestID" -> 
+         "1754dc50-0240-492f-8a31-10ca32b964cd", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MHandleResult[
+             Except[
+              Blank[String]], 
+             Function[$CellContext`res, 
+              Meh`MThrowAll["500", 
+               MessageName[$CellContext`foo, "string"], 
+               Head[$CellContext`res], 
+               Blank[String]]]][{"string"}]]], "ExpectedOutput" -> HoldForm[
+           Failure["500", 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ActualOutput" -> HoldForm[
+           Failure["500", 
+            Association[
+            "MessageTemplate" :> MessageName[$CellContext`foo, "string"], 
+             "MessageParameters" -> {List, 
+               Blank[String]}]]], "ExpectedMessages" -> {
+           HoldForm[
+            MessageName[$CellContext`foo, "string"]]}, "ActualMessages" -> {
+           HoldForm[
+            Message[
+             MessageName[$CellContext`foo, "string"], List, 
+             Blank[String]]]}, "AbsoluteTimeUsed" -> 
+         Quantity[0.001`4.15051499783199, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[1056, "Bytes"]]], 
+      19 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 19, "TestID" -> 
+         "846538e8-04f2-4f8a-baf5-afa5b6656992", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MOnFailure[List][$Failed]], "ExpectedOutput" -> 
+         HoldForm[{$Failed}], "ActualOutput" -> HoldForm[{$Failed}], 
+         "ExpectedMessages" -> {}, "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.150514997831988, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[88, "Bytes"]]], 20 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 20, "TestID" -> 
+         "846538e8-04f2-4f8a-baf5-afa5b6656992", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MOnFailure[List][{}]], "ExpectedOutput" -> HoldForm[{}], 
+         "ActualOutput" -> HoldForm[{}], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.150514997831988, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[40, "Bytes"]]], 21 -> 
+      TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 21, "TestID" -> 
+         "846538e8-04f2-4f8a-baf5-afa5b6656992", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MOnFailure[Meh`MThrow][$Failed]]], "ExpectedOutput" -> 
+         HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ActualOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[448, "Bytes"]]], 
+      22 -> TestResultObject[
+        Association[
+        "TestClass" -> None, "TestIndex" -> 22, "TestID" -> 
+         "846538e8-04f2-4f8a-baf5-afa5b6656992", "Outcome" -> "Success", 
+         "Input" -> HoldForm[
+           Meh`MCatch[
+            Meh`MThrowOnFailure[$Failed]]], "ExpectedOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ActualOutput" -> HoldForm[
+           Failure["General", 
+            Association["Message" -> "$Failed"]]], "ExpectedMessages" -> {}, 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         Quantity[0``7.1505149978319915, "Seconds"], "CPUTimeUsed" -> 
+         Quantity[0., "Seconds"], "MemoryUsed" -> Quantity[384, "Bytes"]]]], 
+    "TestsSucceededIndices" -> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+      15, 16, 17, 18, 19, 20, 21, 22}, "TestsFailedIndices" -> {}, 
+    "TestsFailedWrongResultsIndices" -> {}, 
+    "TestsFailedWithMessagesIndices" -> {}, 
+    "TestsFailedWithErrorsIndices" -> {}]],
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False]], "Output",
+ CellLabel->"Out[20]=",ExpressionUUID->"babfb9de-fe04-485b-9509-000ad063e804"]
+}, Open  ]]
 }, Open  ]]
 },
-WindowSize->{775, 873},
+WindowSize->{1682, 873},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
 FrontEndVersion->"11.3 for Microsoft Windows (64-bit) (March 6, 2018)",
 StyleDefinitions->"Default.nb"
 ]
+

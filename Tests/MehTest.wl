@@ -52,7 +52,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*message::name throw/throwAll*)
 
 
@@ -116,7 +116,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*payload*)
 
 
@@ -159,7 +159,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
@@ -224,4 +224,36 @@ List@"string" // MHandleResult[
 , Failure["500", <|"MessageTemplate" :> foo::string, "MessageParameters" -> {List, _String}|>]
 , {foo::string}
 , TestID -> "1754dc50-0240-492f-8a31-10ca32b964cd"
+]
+
+
+(* ::Subsection:: *)
+(*M*OnFailure*)
+
+
+VerificationTest[
+  $Failed // MOnFailure[List]
+, {$Failed}
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+]
+
+
+VerificationTest[
+  {} // MOnFailure[List]
+, {}
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+]
+
+
+VerificationTest[
+  MCatch[ $Failed // MOnFailure[MThrow] ]
+, Failure["General", <|"Message" -> "$Failed"|>]
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+]
+
+
+VerificationTest[
+  MCatch[ $Failed // MThrowOnFailure ]
+, Failure["General", <|"Message" -> "$Failed"|>]
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
 ]

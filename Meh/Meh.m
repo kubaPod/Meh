@@ -21,7 +21,7 @@
 
 
 
-(* ::Chapter::Closed:: *)
+(* ::Chapter:: *)
 (* Begin package*)
 
 
@@ -39,6 +39,10 @@ ClearAll["`*", "`*`*"]
   MThrowAll;
   
   MHandleResult;
+  
+  MOnFailure;
+  MThrowOnFailure;
+  
 
 Begin["`Private`"];
 
@@ -61,8 +65,11 @@ Begin["`Private`"];
 
 
 (* ::Section::Closed:: *)
-(*MFailureQ*)
+(*Core*)
 
+
+(* ::Subsection::Closed:: *)
+(*MFailureQ*)
 
 
   MFailureQ[ _Failure|$Canceled|$Aborted|$Failed ]=True; 
@@ -72,7 +79,7 @@ Begin["`Private`"];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Subsection::Closed:: *)
 (*MFailureGenerate*)
 
 
@@ -96,7 +103,7 @@ Begin["`Private`"];
   
 
 
-(* ::Section::Closed:: *)
+(* ::Subsection::Closed:: *)
 (*MThrow / MCatch*)
 
 
@@ -149,7 +156,7 @@ Begin["`Private`"];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Subsection::Closed:: *)
 (*MThrowAll*)
 
 
@@ -165,7 +172,11 @@ Begin["`Private`"];
    
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
+(*Flow control*)
+
+
+(* ::Subsection:: *)
 (*MHandleResult*)
 
 
@@ -179,6 +190,28 @@ MHandleResult[rules___]:=Function[
 
 (* It should throw or return the input but it is up to the user what rules are put there *)
 (* It makes ThrowOnFailure redundant as it contains that rule by default. *)
+
+
+(* ::Subsection:: *)
+(*M*OnFailure*)
+
+
+(* everything here is a syntactic sugar and can be done with MHandleResult only*)
+(* But maybe someone just needs to handle failures and be verbose, additionally
+   keeping GeneralUtilities` like names, then it is for them.
+ *)
+
+
+MOnFailure::usage = "expr // MOnFailure[foo] does foo[expr] /; MFailureQ[expr]";
+
+MOnFailure[foo_][res_?MFailureQ]:= foo @ res; 
+MOnFailure[foo_][res_]:= res;
+
+
+MThrowOnFailure::usage = "expr // MThrowOnFailure MThrow-s expr if MFailureQ[expr]";
+
+MThrowOnFailure[res_?MFailureQ] := MThrow @ res;
+MThrowOnFailure[res_]:= res
 
 
 (* ::Chapter:: *)

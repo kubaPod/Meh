@@ -43,6 +43,7 @@ ClearAll["`*", "`*`*"]
   MHandleResult;  
   MOnFailure;
   MThrowOnFailure;
+  MRetryOnFailure;
   
   MFailByDefault;
   
@@ -55,7 +56,7 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*misc*)
 
 
@@ -84,6 +85,19 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 *)
 
 
+(* ::Section::Closed:: *)
+(*Function construction*)
+
+
+MFailByDefault::usage = "foo // MFailByDefault makes foo to issue a message and return a Failure when unknown input is provided.";
+
+MFailByDefault[symbol_Symbol]:= (
+  symbol::argpatt = Meh::argpatt
+; symbol[x___]:= MGenerateAll[symbol::argpatt, inputToSignature[symbol[x]]]
+);
+  
+
+
 (* ::Section:: *)
 (*Core*)
 
@@ -99,11 +113,11 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MGenerateFailure; MGenerateAll*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*notes*)
 
 
@@ -155,7 +169,7 @@ MGenerateFailure[
   ] :=  MGenerateFailure[tag, msg, args, <||>]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*core*)
 
 
@@ -190,7 +204,7 @@ MGenerateAll[
 MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*defaults*)
 
 
@@ -213,7 +227,7 @@ input : MGenerateAll[whateverElse__]:= (
 )
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MThrow / MCatch*)
 
 
@@ -241,7 +255,7 @@ input : MGenerateAll[whateverElse__]:= (
   ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MThrowAll*)
 
 
@@ -254,7 +268,7 @@ input : MGenerateAll[whateverElse__]:= (
 (*Flow control*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
@@ -270,7 +284,7 @@ MHandleResult[rules___]:=Function[
 (* It makes ThrowOnFailure redundant as it contains that rule by default. *)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*M*OnFailure*)
 
 
@@ -292,17 +306,37 @@ MThrowOnFailure[res_?MFailureQ] := MThrow @ res;
 MThrowOnFailure[res_]:= res
 
 
-(* ::Section:: *)
-(*Function construction*)
+(* ::Subsection:: *)
+(*MRetryOnFailure*)
 
 
-MFailByDefault::usage = "foo // MFailByDefault makes foo to issue a message and return a Failure when unknown input is provided.";
+MRetryOnFailure // Attributes = {HoldFirst};
 
-MFailByDefault[symbol_Symbol]:= (
-  symbol::argpatt = Meh::argpatt
-; symbol[x___]:= MGenerateAll[symbol::argpatt, inputToSignature[symbol[x]]]
-);
-  
+MRetryOnFailure::usage = "MRetryOnFailure[expr, n], if FailureQ[expr] then tries again, n times. "<>
+  "So in total at most n+1 evaluations of expr.";
+
+
+MRetryOnFailure[]:=MRetryOnFailure[1];
+
+
+MRetryOnFailure[n_Integer]:= Function[
+  expr
+, MRetryOnFailure[expr, n]
+, HoldAll
+];
+
+
+MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
+  While[
+    ++i
+  ; result = expr
+  ; FailureQ @ result && i <= n
+  ]
+; result
+];
+
+
+MRetryOnFailure // MFailByDefault;
 
 
 (* ::Chapter:: *)

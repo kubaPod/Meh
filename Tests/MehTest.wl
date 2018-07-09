@@ -308,6 +308,10 @@ VerificationTest[
 ]
 
 
+(* ::Section:: *)
+(*Function construction*)
+
+
 (* ::Subsection:: *)
 (*FailByDefault*)
 
@@ -318,3 +322,30 @@ VerificationTest[
 , {foo::argpatt}
 , TestID -> "853f20f1-3739-4f66-8449-083b6593ad55"
 ];
+
+
+(* ::Subsection:: *)
+(*RetryOnFailure*)
+
+
+VerificationTest[
+  Block[{i=0}
+, {MRetryOnFailure[i++; $Failed, 2  ]  , i }
+]
+, {$Failed, 3}
+, TestID -> "5c8421b7-0a3e-41d6-9c3e-d61554673ed1"
+]
+
+
+VerificationTest[
+  Block[{i=0}
+, {MRetryOnFailure[i++; $Failed ]  , i }
+]
+, {$Failed, 2}
+, TestID -> "f51382ec-06d3-4e22-9c5f-227aa8ed6a8e"
+]
+
+
+Block[{i=0}
+, {MRetryOnFailure[i++; $Failed, 2  ]  , i }
+]

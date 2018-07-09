@@ -9,8 +9,8 @@ foo::argy = "foo `1`";
 foo::string = "`` is not a String";
 
 
-(* ::Subsection:: *)
-(*Generic*)
+(* ::Subsection::Closed:: *)
+(*MFailureQ*)
 
 
 VerificationTest[(* 1 *)
@@ -21,9 +21,13 @@ VerificationTest[(* 1 *)
 ]
 
 
+(* ::Subsection::Closed:: *)
+(*MCatch / MThrow*)
+
+
 VerificationTest[
   MCatch[MThrow/@{$Failed,$Canceled,$Aborted}],
-  Failure["General", <|"Message" -> "$Failed"|>],
+  Failure["Generic", <|"Message" -> "$Failed"|>],
   TestID -> "cdeccebc-bfed-446e-a7ce-58e8a0ae48cc"
 ]
 
@@ -34,9 +38,9 @@ VerificationTest[
   , Failure[], Failure["General",<|"MessageTemplate"->"``","MessageParameters"->{1}|>]
   , whatever
   }
-, { Failure["General", <|"Message" -> "$Failed"|>]
-  , Failure["General", <|"Message" -> "$Canceled"|>]
-  , Failure["General", <|"Message" -> "$Aborted"|>]
+, { Failure["Generic", <|"Message" -> "$Failed"|>]
+  , Failure["Generic", <|"Message" -> "$Canceled"|>]
+  , Failure["Generic", <|"Message" -> "$Aborted"|>]
   , Failure[]
   , Failure["General", <|"MessageTemplate" -> "``", "MessageParameters" -> {1}|>]
   , whatever
@@ -53,10 +57,55 @@ VerificationTest[
 
 
 (* ::Subsection::Closed:: *)
+(*MGenerateFailure*)
+
+
+(* a lot is tested via MThrow* tests so I do not duplicate it here *)
+
+
+VerificationTest[
+  MGenerateFailure["invalid", "string"]
+, Failure[MGenerateFailure, <|"Message" -> "There are no rules associated with signature MGenerateFailure[String, String]."|>]
+, {MGenerateFailure::argpatt}
+, TestID -> "28fd432a-0c96-4e40-96e3-102c265be76a"
+]
+
+
+VerificationTest[
+  MGenerateFailure["should act as an Identity for a single argument"]
+, "should act as an Identity for a single argument"
+, TestID -> "7227a794-ecd5-49aa-8bc0-58c2665f4060"
+]
+
+
+VerificationTest[
+  MGenerateFailure[ $Aborted]
+, Failure["Generic", <|"Message" -> "$Aborted"|>]
+, TestID -> "eb78016c-3cab-4629-b789-d38e94a4679d"
+]
+
+
+VerificationTest[
+  MCatch @ MThrowAll["invalid", "string"]
+, Failure[MGenerateAll, <|"Message" -> "There are no rules associated with signature MGenerateAll[String, String]."|>]
+, {MGenerateAll::argpatt}
+, TestID -> "c920935d-ce0b-4b44-b0e7-949d4883e3b4"
+]
+
+
+VerificationTest[
+  MGenerateAll[General::argt,foo,2,3,4]
+, Failure[General, <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>]
+, {General::argt}
+, TestID -> "d1155b30-e4ea-481e-a660-acce042b5ff2"
+]
+
+
+(* ::Subsection::Closed:: *)
 (*message::name throw/throwAll*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Message like syntax *)
 
 
@@ -75,7 +124,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Same but with custom tag*)
 
 
@@ -94,12 +143,12 @@ VerificationTest[
 ]
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Failure like syntax*)
 
 
 VerificationTest[
-  MCatch @ MThrow[foo::argx,<|"arg"->bar|>],
+  MCatch @ MThrow[foo::argx, <|"arg"->bar|>],
   Failure[foo, <|"MessageTemplate" :> foo::argx, "MessageParameters" -> <|"arg" -> bar|>|>],
   TestID -> "1b2f7ddc-b2f7-42bb-82a4-de304864bedd"
 ]
@@ -167,7 +216,7 @@ VerificationTest[
   MCatch[
     $Aborted // MHandleResult[]; 1
   ]
-, Failure["General", <|"Message" -> "$Aborted"|>]
+, Failure["Generic", <|"Message" -> "$Aborted"|>]
 , TestID -> "bf83f8f6-2d77-47b2-96b0-7dc4750e778d"
 ]
 
@@ -227,33 +276,45 @@ List@"string" // MHandleResult[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*M*OnFailure*)
 
 
 VerificationTest[
   $Failed // MOnFailure[List]
 , {$Failed}
-, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656990"
 ]
 
 
 VerificationTest[
   {} // MOnFailure[List]
 , {}
-, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656991"
 ]
 
 
 VerificationTest[
   MCatch[ $Failed // MOnFailure[MThrow] ]
-, Failure["General", <|"Message" -> "$Failed"|>]
+, Failure["Generic", <|"Message" -> "$Failed"|>]
 , TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
 ]
 
 
 VerificationTest[
   MCatch[ $Failed // MThrowOnFailure ]
-, Failure["General", <|"Message" -> "$Failed"|>]
-, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
+, Failure["Generic", <|"Message" -> "$Failed"|>]
+, TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656993"
 ]
+
+
+(* ::Subsection:: *)
+(*FailByDefault*)
+
+
+VerificationTest[
+  foo[x_]:=x^2; foo // MFailByDefault ; foo[1,2]
+, Failure[foo, <|"MessageTemplate" :> foo::argpatt, "MessageParameters" -> {"foo[Integer, Integer]"}|>]
+, {foo::argpatt}
+, TestID -> "853f20f1-3739-4f66-8449-083b6593ad55"
+];

@@ -33,15 +33,18 @@ ClearAll["`*", "`*`*"]
   Meh;
   
   MFailureQ;
+  MGenerateFailure;
+  MGenerateAll;
   
   MCatch;
   MThrow;
   MThrowAll;
   
-  MHandleResult;
-  
+  MHandleResult;  
   MOnFailure;
   MThrowOnFailure;
+  
+  MFailByDefault;
   
 
 Begin["`Private`"];
@@ -52,7 +55,7 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*misc*)
 
 
@@ -60,11 +63,28 @@ Begin["`Private`"];
   
   Meh::match = "Unexpected error, expression with head `` does not match ``.";
   
-  $MehTag = "MEH";  
+  Meh::argpatt = "There are no rules associated with signature ``."; 
   
 
 
-(* ::Section::Closed:: *)
+inputToSignature // Attributes = {HoldAllComplete};
+
+inputToSignature::usage = "Is a helper function for _::argpatt to transform unknown user input to a sequence of heads";
+
+inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
+  "``[``]"
+, head
+, Row[ Thread @ HoldForm[{spec}][[{1}, ;;, 0]], ", "]
+];
+
+
+(*TODO: 
+
+  ThrowOnMessage
+*)
+
+
+(* ::Section:: *)
 (*Core*)
 
 
@@ -79,35 +99,12 @@ Begin["`Private`"];
 
 
 
-(* ::Subsection::Closed:: *)
-(*MFailureGenerate*)
+(* ::Subsection:: *)
+(*MGenerateFailure; MGenerateAll*)
 
 
-  MFailureGenerate // Attributes = { HoldAll };
-  (*
-  MFailureGenerate // Options = {
-    "Tag" \[Rule] Automatic
-  , "Payload" \[Rule] <||>  
-  };
-  *)
-  
-  MFailureGenerate[
-    tag     : _String | _Symbol
-  , templ   :(_String | _MessageName)
-  , args    : _List | _Association
-  , payload : _Association : <||>
-  ]:=Failure[
-    tag
-  , <|"MessageTemplate" :> templ, "MessageParameters" -> args, payload|>
-  ]
-  
-
-
-(* ::Subsection::Closed:: *)
-(*MThrow / MCatch*)
-
-
-  MCatch = Function[expr, Catch[expr, $MehTag], HoldAllComplete];
+(* ::Subsubsection::Closed:: *)
+(*notes*)
 
 
 (*
@@ -119,41 +116,129 @@ Begin["`Private`"];
   
   Full signature: MThrow[tag_String, msg_MessageName, args: ___ | _Association, payload___Rule ]:=
 *)  
-  MThrow // Attributes = {HoldAll};
+
+ (* quick temp messages, discouraged ;) *)
+ (* MThrow[tempMsg:_String, args___]         := MThrow @ MGenerateFailure["dev", tempMsg, {args} ];
+  MThrow[tempMsg:_String, args:_Association]:= MThrow @ MGenerateFailure["dev", tempMsg, args ];*)
+
+
+
+
+(* ::Subsubsection::Closed:: *)
+(*misc*)
+
+
+  MGenerateFailure // Attributes = { HoldAll };  
   
-  (*MThrow // Options = MFailureGenerate // Options;*)
+  MGenerateAll // Attributes = { HoldAll };
+  
+  MGenerateFailure::usage = "MGenerateFailure[spec___] generates a Failure if spec matches special syntax. " <> 
+    "Else, single argument, returns it. Else, for multiple arguments generates a failure + message.";
+    
+  MGenerateFailure::argpatt = MGenerateAll::argpatt = Meh::argpatt;
 
-  MThrow[ f : _ ] := Throw[f, $MehTag];
 
-  MThrow[ expr : $Failed | $Canceled | $Aborted ]:= MThrow @ Failure["General", <|"Message" -> ToString[expr]|>]
+(* ::Subsubsection::Closed:: *)
+(*message/failure like syntactic sugar*)
 
-    (* quick temp messages, discouraged ;) *)
- (* MThrow[tempMsg:_String, args___]         := MThrow @ MFailureGenerate["dev", tempMsg, {args} ];
-  MThrow[tempMsg:_String, args:_Association]:= MThrow @ MFailureGenerate["dev", tempMsg, args ];*)
 
-  MThrow[ 
+MGenerateFailure[ 
     msg  : MessageName[head : _Symbol, name : _String], 
     args : ___ 
-  ]:= MThrow[head, msg, args];
-  
-  MThrow[ 
+  ]:= MGenerateFailure[head, msg, args];
+
+
+MGenerateFailure[ 
     tag     : _String | _Symbol, 
     msg     : HoldPattern[MessageName[head:_Symbol, name:_String]], 
-    args    : _Association, 
-    payload : _Association : <||>
-  ] := MThrow @ MFailureGenerate[tag, msg, args, payload]
-  (* order matters, do not shuffle *)
-  MThrow[ 
+    args    : _Association     
+  ] :=  MGenerateFailure[tag, msg, args, <||>]
+
+
+(* ::Subsubsection::Closed:: *)
+(*core*)
+
+
+  MGenerateFailure[
+    tag     : _String | _Symbol
+  , templ   :(_String | _MessageName)
+  , args    : _List | _Association
+  , payload : _Association : <||>
+  ]:=Failure[
+    tag
+  , <|"MessageTemplate" :> templ, "MessageParameters" -> args, payload|>
+  ];  
+
+
+(* this needs to be after (args    : _List | _Association) one because of specificity *)
+MGenerateFailure[ 
     tag     : _String | _Symbol , 
     msg     : HoldPattern[ MessageName[head:_Symbol, name:_String]], 
     args    : ___,
     payload : _Association : <||>
-  ]:= MThrow @ MFailureGenerate[tag, msg, {args}, payload ];
-  
-  
-  
-  
+  ]:= MGenerateFailure[tag, msg, {args}, payload ]
 
+
+MGenerateAll[
+    tag     : _String | _Symbol | PatternSequence[]
+  , msg     : _MessageName
+  , args    : __
+  , payload : _Association : <||>
+  ]:=(Message[msg, args]; MGenerateFailure[tag, msg, args, payload]);
+
+
+MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["Generic", <|"Message" -> ToString[expr]|>]
+
+
+(* ::Subsubsection:: *)
+(*defaults*)
+
+
+MGenerateFailure[ whateverElse_ ]:= whateverElse;
+MGenerateAll[ whateverElse_ ]:= whateverElse;
+
+
+input : MGenerateFailure [whateverElse__]:= (
+  Message[MGenerateFailure::argpatt, inputToSignature[input] ]
+; Failure[MGenerateFailure
+  , <|"Message" -> ToString @ StringForm[MGenerateFailure::argpatt, inputToSignature[input] ]|>
+  ]  
+);
+
+input : MGenerateAll [whateverElse__]:= (
+  Message[MGenerateAll::argpatt, inputToSignature[input] ]
+; Failure[MGenerateAll
+  , <|"Message" -> ToString @ StringForm[MGenerateAll::argpatt, inputToSignature[input] ]|>
+  ]  
+)
+
+
+(* ::Subsection::Closed:: *)
+(*MThrow / MCatch*)
+
+
+  $MehTag = "MEH";    
+
+
+  MCatch = Function[expr, Catch[expr, $MehTag], HoldAllComplete];
+
+
+  MThrow // Attributes = {HoldAll};  
+
+
+  MThrow[ f : _ ]:=Throw[f, $MehTag ];  
+
+
+  MThrow[ f : $Failed | $Canceled | $Aborted ] := Throw[
+    MGenerateFailure[f]
+  , $MehTag
+  ]
+
+
+  MThrow[ f : ___ ] := Throw[
+    MGenerateFailure[f]
+  , $MehTag
+  ];
 
 
 (* ::Subsection::Closed:: *)
@@ -162,21 +247,14 @@ Begin["`Private`"];
 
   MThrowAll // Attributes = {HoldAll};
   
-  MThrowAll[
-    tag     : _String | _Symbol | PatternSequence[]
-  , msg     : _MessageName
-  , args    : __
-  , payload : _Association : <||>
-  ]:=(Message[msg, args]; MThrow[tag, msg, args, payload]) 
-  (*GIGO: Message can't handle parameters from association so think!*)
-   
+  MThrowAll[spec___]:= MThrow @ MGenerateAll[spec]; 
 
 
 (* ::Section:: *)
 (*Flow control*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
@@ -192,7 +270,7 @@ MHandleResult[rules___]:=Function[
 (* It makes ThrowOnFailure redundant as it contains that rule by default. *)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*M*OnFailure*)
 
 
@@ -212,6 +290,19 @@ MThrowOnFailure::usage = "expr // MThrowOnFailure MThrow-s expr if MFailureQ[exp
 
 MThrowOnFailure[res_?MFailureQ] := MThrow @ res;
 MThrowOnFailure[res_]:= res
+
+
+(* ::Section:: *)
+(*Function construction*)
+
+
+MFailByDefault::usage = "foo // MFailByDefault makes foo to issue a message and return a Failure when unknown input is provided.";
+
+MFailByDefault[symbol_Symbol]:= (
+  symbol::argpatt = Meh::argpatt
+; symbol[x___]:= MGenerateAll[symbol::argpatt, inputToSignature[symbol[x]]]
+);
+  
 
 
 (* ::Chapter:: *)

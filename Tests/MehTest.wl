@@ -9,7 +9,7 @@ foo::argy = "foo `1`";
 foo::string = "`` is not a String";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MFailureQ*)
 
 
@@ -21,13 +21,13 @@ VerificationTest[(* 1 *)
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MCatch / MThrow*)
 
 
 VerificationTest[
   MCatch[MThrow/@{$Failed,$Canceled,$Aborted}],
-  Failure["Generic", <|"Message" -> "$Failed"|>],
+  Failure["err", <|"Message" -> "$Failed"|>],
   TestID -> "cdeccebc-bfed-446e-a7ce-58e8a0ae48cc"
 ]
 
@@ -38,9 +38,9 @@ VerificationTest[
   , Failure[], Failure["General",<|"MessageTemplate"->"``","MessageParameters"->{1}|>]
   , whatever
   }
-, { Failure["Generic", <|"Message" -> "$Failed"|>]
-  , Failure["Generic", <|"Message" -> "$Canceled"|>]
-  , Failure["Generic", <|"Message" -> "$Aborted"|>]
+, { Failure["err", <|"Message" -> "$Failed"|>]
+  , Failure["err", <|"Message" -> "$Canceled"|>]
+  , Failure["err", <|"Message" -> "$Aborted"|>]
   , Failure[]
   , Failure["General", <|"MessageTemplate" -> "``", "MessageParameters" -> {1}|>]
   , whatever
@@ -56,7 +56,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MGenerateFailure*)
 
 
@@ -65,7 +65,7 @@ VerificationTest[
 
 VerificationTest[
   MGenerateFailure["invalid", "string"]
-, Failure[MGenerateFailure, <|"Message" -> "There are no rules associated with signature MGenerateFailure[String, String]."|>]
+, Failure["argpatt", <|"Message" -> "There are no rules associated with signature MGenerateFailure[String, String]."|>]
 , {MGenerateFailure::argpatt}
 , TestID -> "28fd432a-0c96-4e40-96e3-102c265be76a"
 ]
@@ -80,14 +80,14 @@ VerificationTest[
 
 VerificationTest[
   MGenerateFailure[ $Aborted]
-, Failure["Generic", <|"Message" -> "$Aborted"|>]
+, Failure["err", <|"Message" -> "$Aborted"|>]
 , TestID -> "eb78016c-3cab-4629-b789-d38e94a4679d"
 ]
 
 
 VerificationTest[
   MCatch @ MThrowAll["invalid", "string"]
-, Failure[MGenerateAll, <|"Message" -> "There are no rules associated with signature MGenerateAll[String, String]."|>]
+, Failure["argpatt", <|"Message" -> "There are no rules associated with signature MGenerateAll[String, String]."|>]
 , {MGenerateAll::argpatt}
 , TestID -> "c920935d-ce0b-4b44-b0e7-949d4883e3b4"
 ]
@@ -95,13 +95,13 @@ VerificationTest[
 
 VerificationTest[
   MGenerateAll[General::argt,foo,2,3,4]
-, Failure[General, <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>]
+, Failure["argt", <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>]
 , {General::argt}
 , TestID -> "d1155b30-e4ea-481e-a660-acce042b5ff2"
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*message::name throw/throwAll*)
 
 
@@ -111,14 +111,14 @@ VerificationTest[
 
 VerificationTest[
   MCatch @ MThrow[General::argt,foo,2,3,4],
-  Failure[General, <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>],
+  Failure["argt", <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>],
   TestID -> "2f9c8c4a-3296-488e-9c88-a57174cb1839"
 ]
 
 
 VerificationTest[
   MCatch @ MThrowAll[General::argt,foo,2,3,4],
-  Failure[General, <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>],
+  Failure["argt", <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>],
   General::argt,
   TestID -> "c51e6c29-02b4-45d4-999e-9ef8364a3afc"
 ]
@@ -149,7 +149,7 @@ VerificationTest[
 
 VerificationTest[
   MCatch @ MThrow[foo::argx, <|"arg"->bar|>],
-  Failure[foo, <|"MessageTemplate" :> foo::argx, "MessageParameters" -> <|"arg" -> bar|>|>],
+  Failure["argx", <|"MessageTemplate" :> foo::argx, "MessageParameters" -> <|"arg" -> bar|>|>],
   TestID -> "1b2f7ddc-b2f7-42bb-82a4-de304864bedd"
 ]
 
@@ -165,7 +165,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*payload*)
 
 
@@ -208,7 +208,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MHandleResult*)
 
 
@@ -216,7 +216,7 @@ VerificationTest[
   MCatch[
     $Aborted // MHandleResult[]; 1
   ]
-, Failure["Generic", <|"Message" -> "$Aborted"|>]
+, Failure["err", <|"Message" -> "$Aborted"|>]
 , TestID -> "bf83f8f6-2d77-47b2-96b0-7dc4750e778d"
 ]
 
@@ -227,7 +227,7 @@ VerificationTest[
       Except[_String] , Function[res, MThrow[foo::string, Head[res], _String]]
     ]
   ]
-, Failure[foo
+, Failure["string"
   , <|"MessageTemplate" :> foo::string, "MessageParameters" -> {List, _String}|>
   ]
 , TestID -> "aa27e31c-8219-4ecb-861c-0b36c679cf74"
@@ -239,7 +239,7 @@ VerificationTest[
     {"string"} // MHandleResult[
       Except[_String] , Function[res, MThrowAll[foo::string, Head[res], _String]]]
   ]
-, Failure[foo, <|"MessageTemplate" :> foo::string, "MessageParameters" -> {List, _String}|>]
+, Failure["string", <|"MessageTemplate" :> foo::string, "MessageParameters" -> {List, _String}|>]
 , {foo::string}
 , TestID -> "1754dc50-0240-492f-8a31-10ca32b964cd"
 ]
@@ -276,7 +276,7 @@ List@"string" // MHandleResult[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*M*OnFailure*)
 
 
@@ -296,14 +296,14 @@ VerificationTest[
 
 VerificationTest[
   MCatch[ $Failed // MOnFailure[MThrow] ]
-, Failure["Generic", <|"Message" -> "$Failed"|>]
+, Failure["err", <|"Message" -> "$Failed"|>]
 , TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
 ]
 
 
 VerificationTest[
   MCatch[ $Failed // MThrowOnFailure ]
-, Failure["Generic", <|"Message" -> "$Failed"|>]
+, Failure["err", <|"Message" -> "$Failed"|>]
 , TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656993"
 ]
 
@@ -314,7 +314,7 @@ VerificationTest[
 
 VerificationTest[
   foo[x_]:=x^2; foo // MFailByDefault ; foo[1,2]
-, Failure[foo, <|"MessageTemplate" :> foo::argpatt, "MessageParameters" -> {"foo[Integer, Integer]"}|>]
+, Failure["argpatt", <|"MessageTemplate" :> foo::argpatt, "MessageParameters" -> {"foo[Integer, Integer]"}|>]
 , {foo::argpatt}
 , TestID -> "853f20f1-3739-4f66-8449-083b6593ad55"
 ];

@@ -103,7 +103,7 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 (*MGenerateFailure; MGenerateAll*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*notes*)
 
 
@@ -145,7 +145,7 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 MGenerateFailure[ 
     msg  : MessageName[head : _Symbol, name : _String], 
     args : ___ 
-  ]:= MGenerateFailure[head, msg, args];
+  ]:= MGenerateFailure[name, msg, args];
 
 
 MGenerateFailure[ 
@@ -155,7 +155,7 @@ MGenerateFailure[
   ] :=  MGenerateFailure[tag, msg, args, <||>]
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*core*)
 
 
@@ -187,7 +187,7 @@ MGenerateAll[
   ]:=(Message[msg, args]; MGenerateFailure[tag, msg, args, payload]);
 
 
-MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["Generic", <|"Message" -> ToString[expr]|>]
+MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]
 
 
 (* ::Subsubsection:: *)
@@ -198,22 +198,22 @@ MGenerateFailure[ whateverElse_ ]:= whateverElse;
 MGenerateAll[ whateverElse_ ]:= whateverElse;
 
 
-input : MGenerateFailure [whateverElse__]:= (
+input : MGenerateFailure[whateverElse__]:= (
   Message[MGenerateFailure::argpatt, inputToSignature[input] ]
-; Failure[MGenerateFailure
+; Failure["argpatt"
   , <|"Message" -> ToString @ StringForm[MGenerateFailure::argpatt, inputToSignature[input] ]|>
   ]  
 );
 
-input : MGenerateAll [whateverElse__]:= (
+input : MGenerateAll[whateverElse__]:= (
   Message[MGenerateAll::argpatt, inputToSignature[input] ]
-; Failure[MGenerateAll
+; Failure["argpatt"
   , <|"Message" -> ToString @ StringForm[MGenerateAll::argpatt, inputToSignature[input] ]|>
   ]  
 )
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MThrow / MCatch*)
 
 
@@ -241,7 +241,7 @@ input : MGenerateAll [whateverElse__]:= (
   ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MThrowAll*)
 
 
@@ -254,7 +254,7 @@ input : MGenerateAll [whateverElse__]:= (
 (*Flow control*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MHandleResult*)
 
 
@@ -270,7 +270,7 @@ MHandleResult[rules___]:=Function[
 (* It makes ThrowOnFailure redundant as it contains that rule by default. *)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*M*OnFailure*)
 
 

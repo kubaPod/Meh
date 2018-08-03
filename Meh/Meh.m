@@ -47,6 +47,12 @@ ClearAll["`*", "`*`*"]
   
   MFailByDefault;
   
+  FailOnInvalidStruct;
+  StructMatch;  MatchedElement;
+  StructValidate;
+  StructUnmatchedPositions
+  
+  
 
 Begin["`Private`"];
 
@@ -306,7 +312,7 @@ MThrowOnFailure[res_?MFailureQ] := MThrow @ res;
 MThrowOnFailure[res_]:= res
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MRetryOnFailure*)
 
 
@@ -337,6 +343,64 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 
 
 MRetryOnFailure // MFailByDefault;
+
+
+(* ::Section::Closed:: *)
+(*Struct Validation*)
+
+
+(* ::Subsection:: *)
+(*StructMatch*)
+
+
+StructMatch // ClearAll;
+MatchedElement // ClearAll;
+MatchedElement // Protect;
+
+(*TODO: handle empty lists for Repeated*)
+$multiPattern = Verbatim/@(Repeated|RepeatedNull);
+
+
+StructMatch[
+  expr : KeyValuePattern[{}]
+, kvp_KeyValuePattern
+]:=  Module[
+  {kvpAsso = Association @@ kvp}
+, Merge[ Apply[StructMatch] ] @ { KeyTake[Keys[kvpAsso]] @ expr, kvpAsso}
+];
+
+
+StructMatch[
+  {}
+, {Verbatim[Repeated][_KeyValuePattern,___]}
+] = MatchedElement[False]
+
+
+StructMatch[expr:{__},{$multiPattern[kvp_KeyValuePattern,___]}]:=  StructMatch[#,kvp]& /@ expr;
+
+
+StructMatch[ expr_, kvp:Except[_KeyValuePattern] ]:=  MatchedElement[ MatchQ[expr,kvp] ];
+
+
+StructMatch[arg___]:=MatchedElement[False];
+
+
+(* ::Subsection:: *)
+(*StructValidate*)
+
+
+StructValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
+StructValidate[patt_]:=Function[expr, StructValidate[expr, patt]];
+StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False]];
+
+
+(* ::Subsection:: *)
+(*StructUnmatchedPositions*)
+
+
+StructUnmatchedPositions // ClearAll;
+StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt], MatchedElement[False]], {} -> 0, {1}];
+StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
 
 
 (* ::Chapter:: *)

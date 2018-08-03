@@ -32,25 +32,18 @@ ClearAll["`*", "`*`*"]
 
   Meh;
   
-  MFailureQ;
-  MGenerateFailure;
-  MGenerateAll;
+  MFailureQ;  MGenerateFailure;  MGenerateAll;
   
-  MCatch;
-  MThrow;
-  MThrowAll;
+  MCatch;  MThrow;  MThrowAll;
   
-  MHandleResult;  
-  MOnFailure;
-  MThrowOnFailure;
-  MRetryOnFailure;
+  MHandleResult;    MOnFailure;  MThrowOnFailure;  MRetryOnFailure;
   
   MFailByDefault;
   
-  FailOnInvalidStruct;
-  StructMatch;  MatchedElement;
-  StructValidate;
-  StructUnmatchedPositions
+  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
+  StructUnmatchedPositions;
+  
+  FailToHTTPResponse
   
   
 
@@ -345,7 +338,7 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 MRetryOnFailure // MFailByDefault;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Struct Validation*)
 
 
@@ -419,6 +412,47 @@ StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False
 StructUnmatchedPositions // ClearAll;
 StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt], MatchedElement[False]], {} -> 0, {1}];
 StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
+
+
+(* ::Section:: *)
+(*migrated*)
+
+
+(* ::Subsection::Closed:: *)
+(*FailToHTTPResponse*)
+
+
+FailToHTTPResponse// ClearAll;
+
+
+
+(*TODO: failure generate? *)
+FailToHTTPResponse[failure:($Failed|$Aborted|$Canceled)]:= FailToHTTPResponse @ Failure["500","MessageTemplate"->ToString[failure]]
+
+
+
+FailToHTTPResponse[
+    f : Failure[
+      tag_String?(StringMatchQ[DigitCharacter..])
+    , asso_
+    ]
+  ]:=HTTPResponse[
+      ExportString[ <| "Message" -> FailureString[f] |>, "RawJSON", "Compact"->True ]
+    , <|"StatusCode" -> tag, "ContentType"->"application/json"|>
+    , CharacterEncoding -> None (*because RawJSON already did it*)
+  ]
+
+
+FailToHTTPResponse[
+    f : Failure[
+      tag:(_String|_Symbol)
+    , asso_
+    ]
+  ]:=HTTPResponse[
+      ExportString[ <| "Tag" -> ToString[tag], "Message" -> FailureString[f] , "MessageList" -> ToString @ $MessageList|>, "RawJSON", "Compact"->True ]
+    , <|"StatusCode" -> "500", "ContentType"->"application/json"|>
+    , CharacterEncoding -> None (*because RawJSON already did it*)
+  ]
 
 
 (* ::Chapter:: *)

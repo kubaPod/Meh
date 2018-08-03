@@ -45,7 +45,7 @@ ClearAll["`*", "`*`*"]
   
   FailToHTTPResponse
   
-  
+  MCheckValue
 
 Begin["`Private`"];
 
@@ -168,7 +168,7 @@ MGenerateFailure[
   ] :=  MGenerateFailure[tag, msg, args, <||>]
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*core*)
 
 
@@ -263,11 +263,11 @@ input : MGenerateAll[whateverElse__]:= (
   MThrowAll[spec___]:= MThrow @ MGenerateAll[spec]; 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Flow control*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MHandleResult*)
 
 
@@ -276,7 +276,11 @@ MHandleResult::usage = "MHandleResult[(patt -> handler)..] creates an operator:"
   
 MHandleResult[rules___]:=Function[
   expr
-, Switch[expr, rules, _?MFailureQ, MThrow, _, Identity] @ expr
+, Switch[expr
+  , rules
+  , _?MFailureQ, MThrow
+  , _          , Identity
+  ] @ expr
 ]
 
 (* It should throw or return the input but it is up to the user what rules are put there *)
@@ -427,6 +431,7 @@ FailToHTTPResponse// ClearAll;
 
 
 (*TODO: failure generate? *)
+(*TODO: rename? *)
 FailToHTTPResponse[failure:($Failed|$Aborted|$Canceled)]:= FailToHTTPResponse @ Failure["500","MessageTemplate"->ToString[failure]]
 
 
@@ -453,6 +458,30 @@ FailToHTTPResponse[
     , <|"StatusCode" -> "500", "ContentType"->"application/json"|>
     , CharacterEncoding -> None (*because RawJSON already did it*)
   ]
+
+
+(* ::Subsection:: *)
+(*MCheckValue*)
+
+
+MCheckValue::usage = "MCheckValue[expr, test, action] - TrueQ[test[expr]] ? expr : action";
+
+
+MCheckValue // Attributes = {HoldAll};
+
+
+MCheckValue[expr_, test_, action_]:=If[ 
+  Not @ TrueQ @ test @ expr
+, action
+, expr
+];
+
+
+MCheckValue[
+  test : _ : Identity
+, action : _ : Throw @ $Failed
+
+]:=Function[expr, MCheckValue[expr,test,action]];
 
 
 (* ::Chapter:: *)

@@ -345,8 +345,26 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 MRetryOnFailure // MFailByDefault;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Struct Validation*)
+
+
+(* ::Subsection::Closed:: *)
+(*FailOnInvalidStruct*)
+
+
+FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, FailOnInvalidStruct[function, structPattern, argPost]]
+
+FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
+  function::invStruct = Meh::invStruct;
+  function[input___]:=MsgAndTaggedFAIL[
+    "400"
+  , function::invStruct
+  , function
+  , StructUnmatchedPositions[{input}[[argPos]], structPattern, 3] // StringRiffle[#, {"\t", "\n\t",""}]&
+  , "\t" <> ToString[structPattern/.KeyValuePattern->Association]
+  ]
+);
 
 
 (* ::Subsection:: *)

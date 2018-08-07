@@ -9,7 +9,7 @@ foo::argy = "foo `1`";
 foo::string = "`` is not a String";
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MFailureQ*)
 
 
@@ -21,7 +21,7 @@ VerificationTest[(* 1 *)
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MCatch / MThrow*)
 
 
@@ -56,7 +56,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MGenerateFailure*)
 
 
@@ -101,7 +101,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*message::name throw/throwAll*)
 
 
@@ -165,7 +165,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*payload*)
 
 
@@ -208,7 +208,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
@@ -276,7 +276,7 @@ List@"string" // MHandleResult[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*M*OnFailure*)
 
 
@@ -312,7 +312,7 @@ VerificationTest[
 (*Function construction*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FailByDefault*)
 
 
@@ -324,7 +324,7 @@ VerificationTest[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*RetryOnFailure*)
 
 
@@ -348,4 +348,45 @@ VerificationTest[
 
 Block[{i=0}
 , {MRetryOnFailure[i++; $Failed, 2  ]  , i }
+]
+
+
+(* ::Section:: *)
+(*Control flow*)
+
+
+(* ::Subsection:: *)
+(*MFailureToHTTPResponse*)
+
+
+previewHTTPResponse = Apply[{ ImportString[ByteArrayToString@#, "RawJSON"], ##2}&];
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ $Failed
+, {<|"Message"->"$Failed","Payload"-><|"MessageList"->"{}"|>|>,<|"StatusCode"->"500","ContentType"->"application/json"|>,CharacterEncoding->None}
+, TestID -> "generic err ToHTTPResponse"
+]
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ Failure["404", <|"MessageTemplate" -> "test 404"|>]
+, {<|"Message"->"test 404","Payload"-><|"MessageList"->"{}"|>|>,<|"StatusCode"->"404","ContentType"->"application/json"|>,CharacterEncoding->None}
+, TestID -> "failure with status code ToHTTPResponse"
+]
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ (1/0; Failure["404", <|"MessageTemplate" -> "test 404"|>])
+, {<|"Message" -> "test 404", "Payload" -> <|"MessageList" -> "{Power::infy}"|>|>, <|"StatusCode" -> "404", "ContentType" -> "application/json"|>, CharacterEncoding -> None}
+, {Power::infy}
+, TestID -> "message list capturing for ToHTTPResponse"
+]
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ (1/0; Failure["404", <|"MessageTemplate" -> "test 404", "PageAddress" -> "127.0.0.1"|>])
+, {<|"Message" -> "test 404", "Payload" -> <|"PageAddress" -> "127.0.0.1", "MessageList" -> "{Power::infy}"|>|>, <|"StatusCode" -> "404", "ContentType" -> "application/json"|>, CharacterEncoding -> None}
+, {Power::infy}
+, TestID -> "Payload in ToHTTPResponse"
 ]

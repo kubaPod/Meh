@@ -21,7 +21,7 @@
 
 
 
-(* ::Chapter:: *)
+(* ::Chapter::Closed:: *)
 (* Begin package*)
 
 
@@ -29,6 +29,8 @@ BeginPackage["Meh`"];
 
 Unprotect["`*", "`*`*"]
 ClearAll["`*", "`*`*"]
+
+Needs @ "GeneralUtilities`";
 
   Meh;
   
@@ -43,9 +45,20 @@ ClearAll["`*", "`*`*"]
   FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
   StructUnmatchedPositions;
   
-  FailToHTTPResponse
+  MFailureToHTTPResponse
   
-  MCheckValue
+  MCheckValue;
+  
+  MExpect;
+  
+  
+  
+   APIMessage;
+  AmbientCheck;
+  PrintLoggerBlock;
+
+  CloudTopLevelFunction;
+  CloudDecorator;
 
 Begin["`Private`"];
 
@@ -65,6 +78,18 @@ Begin["`Private`"];
   
   Meh::argpatt = "There are no rules associated with signature ``."; 
   
+  
+  Meh::invInput = "Invalid input for ``";
+
+  Meh::invStruct = StringRiffle[
+    {"``: Invalid values at positions:", "``", "Input needs to match:","``"},
+    "\n\n"
+  ];
+
+  Meh::invStructHttp = StringRiffle[
+    {"Invalid HTTPRequest. Body values at positions:", "``", "HTTPRequest.Body needs to match:", "``"},
+    "\n\n"
+  ]
 
 
 inputToSignature // Attributes = {HoldAllComplete};
@@ -97,7 +122,7 @@ MFailByDefault[symbol_Symbol]:= (
   
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Core*)
 
 
@@ -152,7 +177,7 @@ MFailByDefault[symbol_Symbol]:= (
 
 
 (* ::Subsubsection::Closed:: *)
-(*message/failure like syntactic sugar*)
+(*MGenerateFailure: message/failure like syntactic sugar*)
 
 
 MGenerateFailure[ 
@@ -168,8 +193,8 @@ MGenerateFailure[
   ] :=  MGenerateFailure[tag, msg, args, <||>]
 
 
-(* ::Subsubsection:: *)
-(*core*)
+(* ::Subsubsection::Closed:: *)
+(*MGenerateFailure; MGenerateAll*)
 
 
   MGenerateFailure[
@@ -197,7 +222,10 @@ MGenerateAll[
   , msg     : _MessageName
   , args    : __
   , payload : _Association : <||>
-  ]:=(Message[msg, args]; MGenerateFailure[tag, msg, args, payload]);
+  ]:=(
+    Message[msg, args]
+  ; MGenerateFailure[tag, msg, args, payload]
+  );
 
 
 MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]
@@ -267,12 +295,14 @@ input : MGenerateAll[whateverElse__]:= (
 (*Flow control*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
 MHandleResult::usage = "MHandleResult[(patt -> handler)..] creates an operator:" <>
   "Function[ input, Switch[input, patt, handler, .., _?MFailureQ, MThrow, _, Identity] @ input].";
+  
+  
   
 MHandleResult[rules___]:=Function[
   expr
@@ -340,6 +370,57 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 
 
 MRetryOnFailure // MFailByDefault;
+
+
+(* ::Subsection::Closed:: *)
+(*MFailureToHTTPResponse*)
+
+
+MFailureToHTTPResponse// ClearAll;
+
+
+
+(*TODO: failure generate? *)
+
+MFailureToHTTPResponse[ failure:($Failed|$Aborted|$Canceled) ]:= 
+  MFailureToHTTPResponse @ Failure["500","MessageTemplate" -> ToString[failure]]
+
+
+
+MFailureToHTTPResponse[
+    f : Failure[
+      tag_String?(StringMatchQ[DigitCharacter..])
+    , asso_
+    ]
+  ]:=With[
+  { payload = If[# === <||>, <||>, "Payload" -> Compress @ #]& @ KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso 
+  }
+, HTTPResponse[
+    ExportString[
+      <|  
+        "Message" -> FailureString @ f
+      , "Payload" -> failureToPayload @ f 
+      |>
+    , "RawJSON", "Compact"->True 
+    ]
+  , <|
+      "StatusCode" -> failureToStatusCode @ f
+    , "ContentType"->"application/json" 
+    |>
+  , CharacterEncoding -> None (*because RawJSON already did it*)
+  ]
+]
+
+
+failureToStatusCode[ Failure[ tag_String?(StringMatchQ[DigitCharacter..]) , asso_ ] ]:= tag; 
+failureToStatusCode[ _?MFailureQ ]:= "500";
+failureToStatusCode // MFailByDefault
+
+
+failureToPayload[ Failure[ tag_, asso_ ] ] := <|
+  KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso
+, "MessageList" -> ToString @ $MessageList  
+|>;
 
 
 (* ::Section::Closed:: *)
@@ -418,46 +499,8 @@ StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt]
 StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*migrated*)
-
-
-(* ::Subsection::Closed:: *)
-(*FailToHTTPResponse*)
-
-
-FailToHTTPResponse// ClearAll;
-
-
-
-(*TODO: failure generate? *)
-(*TODO: rename? *)
-FailToHTTPResponse[failure:($Failed|$Aborted|$Canceled)]:= FailToHTTPResponse @ Failure["500","MessageTemplate"->ToString[failure]]
-
-
-
-FailToHTTPResponse[
-    f : Failure[
-      tag_String?(StringMatchQ[DigitCharacter..])
-    , asso_
-    ]
-  ]:=HTTPResponse[
-      ExportString[ <| "Message" -> FailureString[f] |>, "RawJSON", "Compact"->True ]
-    , <|"StatusCode" -> tag, "ContentType"->"application/json"|>
-    , CharacterEncoding -> None (*because RawJSON already did it*)
-  ]
-
-
-FailToHTTPResponse[
-    f : Failure[
-      tag:(_String|_Symbol)
-    , asso_
-    ]
-  ]:=HTTPResponse[
-      ExportString[ <| "Tag" -> ToString[tag], "Message" -> FailureString[f] , "MessageList" -> ToString @ $MessageList|>, "RawJSON", "Compact"->True ]
-    , <|"StatusCode" -> "500", "ContentType"->"application/json"|>
-    , CharacterEncoding -> None (*because RawJSON already did it*)
-  ]
 
 
 (* ::Subsection:: *)
@@ -482,6 +525,221 @@ MCheckValue[
 , action : _ : Throw @ $Failed
 
 ]:=Function[expr, MCheckValue[expr,test,action]];
+
+
+(* ::Section::Closed:: *)
+(*api utils migrated*)
+
+
+(* ::Subsection::Closed:: *)
+(*Discussion*)
+
+
+(* Mathematica Package *)
+(* Created by Mathematica Plugin for IntelliJ IDEA *)
+
+(* :Title: APIUtilities *)
+(* :Context: APIUtilities` *)
+(* :Author: Kuba *)
+(* :Date: 2017-11-16 *)
+
+(* :Package Version: 0.1 *)
+(* :Mathematica Version: *)
+(* :Copyright: (c) 2017 Kuba *)
+(* :Keywords: *)
+(* :Discussion:
+    The idea is to have a mini exceptions handling framework,
+    together with logging
+    and what we want to see at the end is a HTTPResponse not a Failure
+    
+    So the way to go is to use API/Form procedure template like so:
+    
+    
+    APIFunction[
+      { stuff }
+    , PrintLoggerBlock @                 (*1*)
+      MOnFailure[MFailureToHTTPResponse] @ (*2*)
+      MCatch @                     (*3*)
+      AmbientCheck @                     (*4*)
+      Module[{}                          (*5*)
+      , Print["calculating something"];1+1/0;Print["DEBUG", "done"];123
+      ] &
+    ]
+    
+    1. PrintLoggerBlock instantiates a log file in {object/path}<>LOG/{dateString}.txt
+       and log all Print or messages there. See def for more info.
+      
+    2. At the end we are expecting an HTTPResponse but if Failure occured we convert it to HTTResponse
+    
+    3. catches any ThrowFailure or MThrow but we use tagged because the tag will contain
+       status code to use by MFailureToHTTPResponse
+       
+    4. Like Check but it throws 'unknown error' with 500 tag on any message. See def for more syntax.
+    
+    
+    Furthermore, replacing 1+2 with PrintBlock (tbd) leaves us with a method perfectly suited for desktop flow.
+*)
+
+
+(* ::Subsection::Closed:: *)
+(*messages*)
+
+
+  APIMessage::usage = "APIMessage is a symbol to store common messages for api methods";
+
+  APIMessage::input = "Failed to parse input as ``";
+  APIMessage::jsonInput = "Failed to parse input as a JSON object";
+  APIMessage::err = "Unexpected error";
+  APIMessage::src = "Source file is missing: ``";
+  
+
+
+(* ::Subsection::Closed:: *)
+(*CloudTopLevelFunction*)
+
+
+  CloudTopLevelFunction::usage = "CloudTopLevelFunction is a wrapper for a top level cloud side functions. You may want to add AmbientCheck before.";
+  
+  CloudTopLevelFunction // Attributes = {HoldAll};
+  
+  CloudTopLevelFunction[opts__Rule]:=Function[proc, CloudTopLevelFunction[proc, opts], HoldAll];
+  
+  CloudTopLevelFunction[proc:Except[_Rule], opts___?OptionQ]:= PrintLoggerBlock[
+    MOnFailure[MFailureToHTTPResponse] @ MCatch @ proc
+  , opts
+  ];
+
+
+
+(* ::Subsection::Closed:: *)
+(*CloudDecorator*)
+
+
+  CloudDecorator::usage = "Function returns Failure for unknown input." <>
+      " In $CloudEvaluation it will be converted to HTTPResponse.";
+
+  CloudDecorator[symbol_]:= (
+
+    symbol[___]:=  If[
+      $CloudEvaluation
+    , MFailureToHTTPResponse
+    , Identity
+   ] @ MCatch @ MThrow["400", APIMessage::input, symbol]
+
+  );
+
+
+
+
+(* ::Subsection::Closed:: *)
+(*AmbientCheck*)
+
+
+  AmbientCheck // Attributes = {HoldAll};
+  AmbientCheck[expr_]:=AmbientCheck[expr, APIMessage::err, Null];
+  AmbientCheck[expr_, msg_, param_]:=AmbientCheck[expr, msg, param, "500"];
+  AmbientCheck[expr_, msg_, args_, status_]:= Check[
+    expr
+  , MThrow[status, msg, args]
+  ];
+
+
+(* ::Subsection::Closed:: *)
+(*PrintLoggerBlock*)
+
+
+  PrintLoggerBlock // ClearAll;
+  PrintLoggerBlock::usage = "Wram API or Form second argument's function body with it to instantiate log file"<>
+    " and redirect Print and messages there.";
+
+  PrintLoggerBlock // Attributes = {HoldAllComplete};
+  PrintLoggerBlock // Options = {
+    "LogFile" -> Automatic,
+    "LogHeader" -> Automatic,
+    "ResponseLogFunction" -> (Print@ToString@ToString[Short@ToString@InputForm[#], StandardForm]&)
+  };
+
+  PrintLoggerBlock[expr___] /; Not[$CloudEvaluation] := expr
+
+  PrintLoggerBlock[option__Rule]:= Function[expr, PrintLoggerBlock[expr, option], HoldAllComplete];
+
+  PrintLoggerBlock[
+    expr:Except[_Rule]
+  , OptionsPattern[]
+  
+  ] /; $CloudEvaluation :=
+  Module[
+  {logFile, logStream, log, path, res, timeMark, finalLogFunction }
+  
+  , timeMark = AbsoluteTime[]
+  ; logFile = OptionValue["LogFile"] /. Automatic :> cloudObjectLogFile[$EvaluationCloudObject]
+  ; finalLogFunction = OptionValue["ResponseLogFunction"]
+    
+  ; If[Not @ FileExistsQ @ #, CloudPut["", #]]& @ logFile
+  
+  ; logStream = OpenAppend[logFile,FormatType->(OutputForm),PageWidth->Infinity]
+  
+  ; log[type:"INFO"|"DEBUG"|"MESSAGE":"INFO", msg__]:=Write[
+      logStream
+    , DateString[{"Time",".","Millisecond"," "}]
+    , $SessionID, " "
+    , StringPadRight[type,10]
+    , StringRiffle[ToString[#,InputForm]&/@{msg}, " "]
+    ]
+  
+  ; Switch[ OptionValue["LogHeader"]
+    , False, {}
+    , Automatic, AddAutoLogHeader[log, logStream]
+    , _, log[OptionValue["LogHeader"]]
+    ]
+  
+  
+  
+  ; Block[{Print = log, Echo, messageString }
+    , Print = log
+    ; Echo[input_, label_: "", pipe_: Identity] := CompoundExpression[
+        Print["INFO", label /. "" :> (##&[]), pipe@input]
+      , input
+      ]
+    ; messageString[Hold[Message[msg:MessageName[head_,name_],args___],_]]:=ToString[StringForm[msg/.Messages[head],args]]  
+    
+    ; Internal`HandlerBlock[ (*we could add to $Messages or $Output but then we can't control headers*)
+      { "Message"
+      , If[Last[#]
+        , Print["MESSAGE",  messageString[#]]
+        ]&
+      }
+      , res = expr
+      ; finalLogFunction @ res
+      ; Print @ StringTemplate["Kernel evaluation time `` [s]"][AbsoluteTime[]-timeMark]
+      ; Close @ logStream
+      ; res
+    ]
+  ]
+];
+
+    AddAutoLogHeader[ log_, logStream_]:=CompoundExpression[
+      log[ StringTemplate["Date:        ``"]@DateString["ISODate"]]
+    , log[ StringTemplate["CloudObject: ``"]@$EvaluationCloudObject]
+    , log[ StringTemplate["Requester:   ``"]@$RequesterWolframID]
+    , Write[logStream,  ""]
+    
+    ];
+  
+    cloudObjectLogFile[cloudObj_]:= Module[{path}
+    , Needs["CloudObject`"]
+    ; path = CloudObjectInformation[$EvaluationCloudObject,"Path"]
+    ; path = If[StringQ @ #, FileNameDrop[#,1], "logs/general.txt"]& @ path
+  
+    ; StringTemplate["``_logs/``/``.txt"][
+        path
+      , DateString["ISODate"]
+      , DateString[{"Time", ":", "Millisecond"}] // StringReplace[":"->"-"]
+      ]
+    ];
+
+
+
 
 
 (* ::Chapter:: *)

@@ -21,7 +21,7 @@
 
 
 
-(* ::Chapter::Closed:: *)
+(* ::Chapter:: *)
 (* Begin package*)
 
 
@@ -291,7 +291,7 @@ input : MGenerateAll[whateverElse__]:= (
   MThrowAll[spec___]:= MThrow @ MGenerateAll[spec]; 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Flow control*)
 
 
@@ -372,7 +372,7 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 MRetryOnFailure // MFailByDefault;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MFailureToHTTPResponse*)
 
 
@@ -389,7 +389,7 @@ MFailureToHTTPResponse[ failure:($Failed|$Aborted|$Canceled) ]:=
 
 MFailureToHTTPResponse[
     f : Failure[
-      tag_String?(StringMatchQ[DigitCharacter..])
+      tag_
     , asso_
     ]
   ]:=With[
@@ -423,11 +423,11 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
 |>;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Struct Validation*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FailOnInvalidStruct*)
 
 
@@ -435,7 +435,7 @@ FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, Fa
 
 FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
   function::invStruct = Meh::invStruct;
-  function[input___]:=MsgAndTaggedFAIL[
+  function[input___]:=MGenerateAll[
     "400"
   , function::invStruct
   , function
@@ -527,7 +527,7 @@ MCheckValue[
 ]:=Function[expr, MCheckValue[expr,test,action]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*api utils migrated*)
 
 

@@ -390,3 +390,17 @@ VerificationTest[
 , {Power::infy}
 , TestID -> "Payload in ToHTTPResponse"
 ]
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ Failure[Symbol, <|"MessageTemplate" -> "test 404"|>]
+, {<|"Message" -> "test 404", "Payload" -> <|"MessageList" -> "{}"|>|>, <|"StatusCode" -> "500", "ContentType" -> "application/json"|>, CharacterEncoding -> None}
+, TestID -> "symbol in tag"
+]
+
+
+VerificationTest[
+  previewHTTPResponse @ MFailureToHTTPResponse @ Failure["any string", <|"MessageTemplate" -> "test 404"|>]
+, {<|"Message" -> "test 404", "Payload" -> <|"MessageList" -> "{}"|>|>, <|"StatusCode" -> "500", "ContentType" -> "application/json"|>, CharacterEncoding -> None}
+, TestID -> "any string in tag"
+]

@@ -42,10 +42,7 @@ Needs @ "GeneralUtilities`";
   
   MFailByDefault;
   
-  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
-  StructUnmatchedPositions;
-  
-  MFailureToHTTPResponse
+  MFailureToHTTPResponse;
   
   MCheckValue;
   
@@ -53,12 +50,17 @@ Needs @ "GeneralUtilities`";
   
   
   
-   APIMessage;
+  APIMessage;
   AmbientCheck;
   PrintLoggerBlock;
 
   CloudTopLevelFunction;
   CloudDecorator;
+  
+  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
+  StructUnmatchedPositions;
+  
+  ToKeyValue;
 
 Begin["`Private`"];
 
@@ -122,7 +124,7 @@ MFailByDefault[symbol_Symbol]:= (
   
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Core*)
 
 
@@ -136,8 +138,7 @@ MFailByDefault[symbol_Symbol]:= (
   MFailureQ[_]=False
 
 
-
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MGenerateFailure; MGenerateAll*)
 
 
@@ -229,6 +230,8 @@ MGenerateAll[
 
 
 MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]
+(*TODO: I do not like "err"*)
+(*TODO: GeneralErrorQ needed, to detect whether a _?FailureQ is also one of $Failed | $Canceled | $Aborted or generated from them*)
 
 
 (* ::Subsubsection::Closed:: *)
@@ -372,7 +375,7 @@ MRetryOnFailure[expr_, n: _Integer : 1]:= Module[{i = 0, result},
 MRetryOnFailure // MFailByDefault;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MFailureToHTTPResponse*)
 
 
@@ -427,8 +430,16 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
 (*Struct Validation*)
 
 
+(*TODO: distinguis invalid from missing etc*)
+(*TODO: strict patterns: currently additional keys are ignored but maybe they should be, optionally, considered invalid*)
+(*TODO: shouldn't FailOnInvalidStruct be MFailOnInvalidStruct? *)
+
+
 (* ::Subsection:: *)
 (*FailOnInvalidStruct*)
+
+
+(*TODO: this should rather be By-default-validate-input-with-respect-to-given-struct*)
 
 
 FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, FailOnInvalidStruct[function, structPattern, argPost]]
@@ -440,7 +451,7 @@ FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
   , function::invStruct
   , function
   , StructUnmatchedPositions[{input}[[argPos]], structPattern, 3] // StringRiffle[#, {"\t", "\n\t",""}]&
-  , "\t" <> ToString[structPattern/.KeyValuePattern->Association]
+  , "\t" <> ToString[structPattern /. KeyValuePattern->Association]
   ]
 );
 
@@ -454,7 +465,7 @@ MatchedElement // ClearAll;
 MatchedElement // Protect;
 
 (*TODO: handle empty lists for Repeated*)
-$multiPattern = Verbatim/@(Repeated|RepeatedNull);
+$multiPattern = Verbatim /@ ( Repeated|RepeatedNull );
 
 
 StructMatch[
@@ -481,7 +492,7 @@ StructMatch[ expr_, kvp:Except[_KeyValuePattern] ]:=  MatchedElement[ MatchQ[exp
 StructMatch[arg___]:=MatchedElement[False];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*StructValidate*)
 
 
@@ -499,15 +510,15 @@ StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt]
 StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*migrated*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MCheckValue*)
 
 
-MCheckValue::usage = "MCheckValue[expr, test, action] - TrueQ[test[expr]] ? expr : action";
+MCheckValue::usage = "Not fully intergrated. MCheckValue[expr, test, action] does TrueQ[test[expr]] ? expr : action.";
 
 
 MCheckValue // Attributes = {HoldAll};
@@ -738,6 +749,21 @@ MCheckValue[
       ]
     ];
 
+
+
+
+
+(* ::Section::Closed:: *)
+(*utilities*)
+
+
+ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling";
+
+ToKeyValue // Attributes = {HoldAll, Listable};
+
+ToKeyValue // MFailByDefault;
+
+ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..] -> sym;
 
 
 

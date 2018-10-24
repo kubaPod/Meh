@@ -9,7 +9,7 @@ foo::argy = "foo `1`";
 foo::string = "`` is not a String";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MFailureQ*)
 
 
@@ -101,7 +101,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*message::name throw/throwAll*)
 
 
@@ -154,7 +154,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Same but with custom tag*)
 
 
@@ -165,7 +165,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*payload*)
 
 
@@ -208,7 +208,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MHandleResult*)
 
 
@@ -276,7 +276,7 @@ List@"string" // MHandleResult[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*M*OnFailure*)
 
 
@@ -308,11 +308,11 @@ VerificationTest[
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Function construction*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FailByDefault*)
 
 
@@ -324,7 +324,7 @@ VerificationTest[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RetryOnFailure*)
 
 
@@ -355,7 +355,7 @@ Block[{i=0}
 (*Control flow*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MFailureToHTTPResponse*)
 
 
@@ -403,4 +403,93 @@ VerificationTest[
   previewHTTPResponse @ MFailureToHTTPResponse @ Failure["any string", <|"MessageTemplate" -> "test 404"|>]
 , {<|"Message" -> "test 404", "Payload" -> <|"MessageList" -> "{}"|>|>, <|"StatusCode" -> "500", "ContentType" -> "application/json"|>, CharacterEncoding -> None}
 , TestID -> "any string in tag"
+]
+
+
+(* ::Section:: *)
+(*StructValidation*)
+
+
+(* ::Subsection::Closed:: *)
+(*StructValidate*)
+
+
+VerificationTest[
+  StructValidate[
+  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
+, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _Integer, "d" -> _Integer}]}]  
+]
+, True
+, TestID -> "d6201a9f-2904-449f-b3ed-e504292df7c7"
+]
+
+
+VerificationTest[
+  StructValidate[
+  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
+, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
+]
+, False
+, TestID -> "a1add116-bcfa-4405-b0e5-b00e08793892"
+]
+
+
+(* ::Subsection::Closed:: *)
+(*StructUnmatchedPositions*)
+
+
+VerificationTest[
+  StructUnmatchedPositions[
+  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
+, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
+]
+, {{Key["a"], Key["c"]}, {Key["a"], Key["d"]}}
+, TestID -> "3669a3c5-2875-4984-bd6d-35e620cec327"
+]
+
+
+(* ::Subsection:: *)
+(*FailOnInvalidStruct*)
+
+
+ClearAll[foo];
+$fooPatt = KeyValuePattern[{"a" -> _Integer}];
+foo // FailOnInvalidStruct[ $fooPatt ]
+foo[ in: $fooPatt]:= in["a"]
+
+
+VerificationTest[
+  foo @ <|"a" -> 1|>
+, 1
+, TestID -> "9e1c0021-71e8-4820-8ca9-107726dc35dc"
+]
+
+
+VerificationTest[
+  foo @ <|"b" -> 1|>
+, Failure["400", <|"MessageTemplate" :> foo::invStruct, "MessageParameters" -> {foo, "\t{Key[a]}", "\t<|a -> _Integer|>"}|>]
+, {foo::invStruct}
+, TestID -> "f6b5fd29-4899-4f06-8021-2f55c3ec4d02"
+]
+
+
+(* ::Section:: *)
+(*Utilities*)
+
+
+(* ::Subsection::Closed:: *)
+(*ToKeyValue*)
+
+
+VerificationTest[
+  Block[{x = 1, y = 2}, ToKeyValue @ {x, y}]
+, {"x" -> 1, "y" -> 2}
+, TestID -> "6b3e93c2-201e-43ab-aaec-a9a5dd7c6276"
+]
+
+
+VerificationTest[
+  Module[{x = 1, y = 2, z = "string"}, ToKeyValue @ {x,y,z}]
+, {"x" -> 1, "y" -> 2, "z" -> "string"}
+, TestID -> "95412c7c-42f7-46f8-a5a5-7fcc3819dd28"
 ]

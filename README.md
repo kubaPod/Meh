@@ -54,7 +54,7 @@ Below is a more detailed symbols guide:
 
 ## Core symbols
 
-###MFailureQ
+### MFailureQ
 
 ```Mathematica
 MFailureQ /@ {
@@ -75,14 +75,14 @@ MGenerateAll[General::argt,foo,2,3,4]
 
 > `Failure["argt", <|   "MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4} |> ]`
 
-Use custom tags for more fine grained flow control:
+Use custom tags for a more fine grained control flow:
 
 ```Mathematica
 MCatch @ MThrow["custom tag",General::argt,foo,2,3,4]
 ```
 > `Failure["custom tag", <|"MessageTemplate" :> General::argt, "MessageParameters" -> {foo, 2, 3, 4}|>]`
 
-Association/Failure oriented syntax:
+`Association/Failure` oriented syntax:
 
 ```Mathematica
 MCatch @ MThrow[foo::argx, <|"arg"->bar|>]

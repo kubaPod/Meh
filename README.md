@@ -37,9 +37,9 @@ It is mostly about syntactic sugar for `Catch/Throw` to cope well with `Messages
 Basic rules:
 
 - core symbols start with `M`: `MThrow`, `MFailureQ` etc. Sub-utilities do not e.g.: `StructValidate`.
-- `MGenerate`, `MGenerateAll`, `MThrow`, `MThrowAll` have the same syntax with respect to Message/Failure related cases. . 
-  - `-All` means that a `Message` will be issued to so only valid message input can be used while simple `MThrow` can accept whatever input you give it.
-  - `Generate` just creates e.g. a `Failure` while `MThrow` throws is to nearest enclosing `MCatch`.
+- `MGenerate`, `MGenerateAll`, `MThrow`, `MThrowAll` have the same syntax with respect to Message/Failure related cases.  
+  - `-All` means that a `Message` will be issued too. That also implies only a valid message input can be used while simple `MThrow` can accept whatever input you give it.
+  - `Generate` just creates e.g. a `Failure` while `MThrow` throws is to a nearest enclosing `MCatch`.
 
 `MThrow` can take `Message` syntax with optional first element which will be a Failure's tag. 
 

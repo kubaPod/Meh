@@ -32,6 +32,10 @@ ClearAll["`*", "`*`*"]
 
 Needs @ "GeneralUtilities`";
 
+  
+  ToKeyValue;
+  OptionLookup;
+
   Meh;
   
   MFailureQ;  MGenerateFailure;  MGenerateAll;
@@ -60,7 +64,10 @@ Needs @ "GeneralUtilities`";
   FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
   StructUnmatchedPositions;
   
-  ToKeyValue;
+  LogDialogBlock;
+  LogDialog;
+  LogWrite;
+  
 
 Begin["`Private`"];
 
@@ -70,8 +77,45 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
+(* ::Section:: *)
+(*Utilities*)
+
+
+ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling";
+
+ToKeyValue // Attributes = {HoldAll, Listable};
+
+ToKeyValue // MFailByDefault;
+
+ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..] -> sym;
+
+
+
+
+OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";
+OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name]
+
+
+(*TODO: absolute options
+OptionLookup[name_,function_,explicit_List]:=Replace[
+OptionValue[function,FilterRules[explicit,Options[function]],name],
+Echo@First@Cases[AbsoluteOptions[function],(name->rules_List)\[RuleDelayed]rules]
+]
+
+ClearAll[foo];
+foo//Options={a\[Rule]Automatic,b->b0};
+foo/:foo//AbsoluteOptions={a\[Rule]{Automatic\[Rule]auto}};
+
+foo[x_,opts___Rule]:={x,OptionLookup[a,foo,{opts}]}
+
+foo[7] (*works*)
+foo[7,a\[Rule]1] (*works*)
+foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
+*)
+
+
 (* ::Section::Closed:: *)
-(*misc*)
+(*Meh misc*)
 
 
   Meh::usage = "Meh is a symbol that stores common messages used by Meh`";
@@ -124,7 +168,7 @@ MFailByDefault[symbol_Symbol]:= (
   
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Core*)
 
 
@@ -294,7 +338,7 @@ input : MGenerateAll[whateverElse__]:= (
   MThrowAll[spec___]:= MThrow @ MGenerateAll[spec]; 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Flow control*)
 
 
@@ -427,6 +471,172 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
 
 
 (* ::Section:: *)
+(*LogDialog*)
+
+
+(* ::Subsection:: *)
+(*CreateLogDialog*)
+
+
+CreateLogDialog // Options = {
+  "Header" -> ""
+, "ProgressIndicator" -> Automatic  
+};
+
+CreateLogDialog[opts___Rule]:= CreateLogDialog[ $CurrentLogTag, opts ];
+
+CreateLogDialog[tag_String, opts___Rule]:= Module[
+  { dockedCells
+  , progressIndicator = OptionLookup["ProgressIndicator", CreateLogDialog, opts] Replace[ Automatic -> ProgressIndicator[Appearance->"Percolate"] ]
+  }
+
+, dockedCells = {Cell[ BoxData @ ToBoxes @ Grid[
+    {{ 
+       Style[OptionValue["Header"], "Subsection"]
+     , PaneSelector[
+           { True -> Replace[ Automatic -> ProgressIndicator[Appearance->"Percolate"] ] @ Options["ProgressIndicator"]  
+           , False -> Spacer[{0,0}]
+           }
+         , Dynamic @ CurrentValue[EvaluationNotebook[], {TaggingRules, "processing"}]
+         , ImageSize    -> Full
+         , ImageMargins -> 0
+         , FrameMargins -> 0
+         , Alignment    -> {Right, Center}
+         
+         ]
+     }}, Alignment->{Left,Center}]
+   , Background-> GrayLevel@.9
+   , CellFrameMargins->15
+   ]  
+ }
+ 
+
+; LogDialog[tag] = CreateDocument[
+    {}
+  , Sequence @@ FilterRules[{opts}, {Options[CreateDocument], BaseStyle -> {}}]  
+  , DockedCells          -> dockedCells
+  , TaggingRules         -> {"LogDialog" -> True, "processing" -> True, "logTag" -> tag}
+  , CellLabelPositioning -> Automatic
+  , ShowCellLabel        -> True
+  , WindowElements       -> {"VerticalScrollBar"}
+  , StyleDefinitions     ->"Dialog.nb"
+  , WindowSize           -> 600{1, 1/GoldenRatio}
+  , WindowTitle          -> "Progress dialog"  
+  ]
+];
+
+
+(* ::Subsection::Closed:: *)
+(*LogDialog*)
+
+
+LogDialog::usage = "LogDialog[tag_.] retruns a specific or current log dialog's NotebookObject. Or $Failed if none is found.";
+
+LogDialog::doesNotExist = "LogDialog associated with `1` does not exist.";
+LogDialog::invalidTag = "`1` is not a valid tag. Tag needs to be a string.";
+LogDialog::duplicatedDialogs = "Multiple dialogs associated with a tag `1` are found. The most recent one is returned. "<>
+  "Use Select[Notebooks[], CurrentValue[#, {TaggingRules, \"tag\"}] === `1` &] to list them all.";
+
+LogDialog[]:= $CurrentLogDialog;
+
+LogDialog[tag_String]:= Module[{candidates}
+, candidates = Select[Notebooks[], CurrentValue[#, {TaggingRules, "tag"}] === tag &]
+; Switch[candidates
+  , {}
+  , Message[LogDialog::doesNotExist, tag]; $Failed
+  
+  , {__NotebookObject}
+  , If[Length @ candidates > 1, Message[LogDialog::duplicatedDialogs, tag]]
+  ; LogDialog[tag] = First @ candidates
+  
+  ]
+];
+
+LogDialog[x_,___]:=(Message[LogDialog::invalidTag, x]; $Failed);
+
+
+
+(* ::Subsection:: *)
+(*LogDialogBlock*)
+
+
+LogDialogBlock::usage = "LogDialogBlock[logTag_., opts][expr] makes sure that a LogDialog[logTag] exists "<>
+  "and creates an environment for expr evaluation to manage logging. "<>
+  "LogWrite[msg] should write to that dialog as well as LogDialog[] should return an associated NotebookObject";
+
+LogDialogBlock // Options = {
+  "StopProgressIndicator" -> True
+, "AutoClose" -> False  
+};
+
+LogDialogBlock[ patt___Rule ]:=LogDialogBlock[ $CurrentLogTag, patt];
+
+LogDialogBlock[tag_String, opts:OptionsPattern[{LogDialogBlock, CreateLogDialog, CreateDocument, BaseStyle -> {}}]]:= With[
+  { 
+    stopIndicator = TrueQ @ OptionValue @ "StopProgressIndicator"
+  , createNbOpts  = Sequence @@ FilterRules[{opts}, Options[CreateLogDialog]]
+  , autoClose     = OptionValue @ "AutoClose"
+  }
+, Function[
+    expression
+  , Block[ {$CurrentLogDialog, $CurrentLogTag = tag}
+    , If[ 
+        Not @ NotebookAliveQ @ LogDialog[tag]
+      , Echo @ CreateLogDialog[tag, createNbOpts]
+      ]
+    ; $CurrentLogDialog = LogDialog[tag]
+    ; With[{res = expression}
+      , If[stopIndicator, StopProgressIndicator[] ]
+      ; If[Positive @ autoClose, RunScheduledTask[NotebookClose @ #, {autoClose}]&@$CurrentLogDialog]
+      ; res
+      ]
+    ]
+  , HoldAll  
+  ]
+];
+
+
+(* ::Subsection::Closed:: *)
+(*WithOptions*)
+
+
+WithOptions[sym_Symbol, opts___Rule]:=Function[
+  expr
+, Block[{OptionLookup}, OptionLookup = <|Options[sym], Reverse[{opts}]|>; expr]
+, HoldAll
+]
+
+
+(* ::Subsection::Closed:: *)
+(*Utilities*)
+
+
+StopProgressIndicator[]:=StopProgressIndicator @ $CurrentLogDialog;
+StopProgressIndicator[nb_NotebookObject]:= CurrentValue[nb, {TaggingRules, "processing"}] = False;
+
+$CurrentLogTag := "global";
+$CurrentLogDialog := LogDialog[$CurrentLogTag];
+
+NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
+NotebookAliveQ[___]:=False;
+
+
+
+(* ::Subsection:: *)
+(*LogWrite*)
+
+
+LogWrite[msg_]:=LogWrite[$CurrentLogDialog, msg];
+
+LogWrite[nb_NotebookObject, msg_]:=NotebookWrite[
+  nb
+, Cell[BoxData @ ToBoxes @ msg, "Output", CellLabel->DateString[{"Time",".","Millisecond"}]]
+, After
+];
+
+
+
+(* ::Section::Closed:: *)
 (*Struct Validation*)
 
 
@@ -510,8 +720,8 @@ StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt]
 StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
 
 
-(* ::Section:: *)
-(*migrated*)
+(* ::Section::Closed:: *)
+(*migrated (experimental)*)
 
 
 (* ::Subsection::Closed:: *)
@@ -538,8 +748,8 @@ MCheckValue[
 ]:=Function[expr, MCheckValue[expr,test,action]];
 
 
-(* ::Section:: *)
-(*api utils migrated*)
+(* ::Section::Closed:: *)
+(*api utils migrated (experimental)*)
 
 
 (* ::Subsection::Closed:: *)
@@ -749,21 +959,6 @@ MCheckValue[
       ]
     ];
 
-
-
-
-
-(* ::Section::Closed:: *)
-(*utilities*)
-
-
-ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling";
-
-ToKeyValue // Attributes = {HoldAll, Listable};
-
-ToKeyValue // MFailByDefault;
-
-ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..] -> sym;
 
 
 

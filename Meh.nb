@@ -55,8 +55,9 @@ Cell[BoxData[
               Evaluator -> Automatic, Method -> "Preemptive"], 
              Alignment -> {Center, Center}, ImageSize -> 
              Dynamic[{
-               Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                AbsoluteCurrentValue[Magnification]}]], 
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}]], 
             GraphicsBox[{
               InsetBox[
                BoxData[
@@ -67,15 +68,16 @@ Cell[BoxData[
                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
                   ImageSize -> 
                   Dynamic[{
-                    Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                    AbsoluteCurrentValue[Magnification]}]], 
-                 TraditionalForm]]]}, PlotRange -> {{0, 1}, {0, 1}}, 
-             Background -> GrayLevel[0.93], Axes -> False, AspectRatio -> 1, 
-             ImageSize -> 
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+             PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+             Axes -> False, AspectRatio -> 1, ImageSize -> 
              Dynamic[{
-               Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                AbsoluteCurrentValue[Magnification]}], Frame -> True, 
-             FrameTicks -> None, FrameStyle -> Directive[
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}], Frame -> True, FrameTicks -> None, 
+             FrameStyle -> Directive[
                Thickness[Tiny], 
                GrayLevel[0.55]]], 
             GridBox[{{
@@ -115,8 +117,9 @@ Cell[BoxData[
               Evaluator -> Automatic, Method -> "Preemptive"], 
              Alignment -> {Center, Center}, ImageSize -> 
              Dynamic[{
-               Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                AbsoluteCurrentValue[Magnification]}]], 
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}]], 
             GraphicsBox[{
               InsetBox[
                BoxData[
@@ -127,15 +130,16 @@ Cell[BoxData[
                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
                   ImageSize -> 
                   Dynamic[{
-                    Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                    AbsoluteCurrentValue[Magnification]}]], 
-                 TraditionalForm]]]}, PlotRange -> {{0, 1}, {0, 1}}, 
-             Background -> GrayLevel[0.93], Axes -> False, AspectRatio -> 1, 
-             ImageSize -> 
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+             PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+             Axes -> False, AspectRatio -> 1, ImageSize -> 
              Dynamic[{
-               Automatic, 3.5 CurrentValue["FontCapHeight"]/
-                AbsoluteCurrentValue[Magnification]}], Frame -> True, 
-             FrameTicks -> None, FrameStyle -> Directive[
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}], Frame -> True, FrameTicks -> None, 
+             FrameStyle -> Directive[
                Thickness[Tiny], 
                GrayLevel[0.55]]], 
             GridBox[{{
@@ -984,11 +988,66 @@ MGenerateAll[String, String]."]]], "ExpectedMessages" -> {
 }, Open  ]],
 
 Cell[BoxData["d"], \
-"Input",ExpressionUUID->"ef3d6518-04b6-4f84-a61c-8e34e22fd480"]
+"Input",ExpressionUUID->"ef3d6518-04b6-4f84-a61c-8e34e22fd480"],
+
+Cell[BoxData["L"], \
+"Input",ExpressionUUID->"a3c79905-2c80-459b-858c-33710702d0ca"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"LogDialogBlock", "[", 
+   RowBox[{"\"\<test\>\"", "\[IndentingNewLine]", ",", 
+    RowBox[{"\"\<Header\>\"", " ", "\[Rule]", " ", 
+     RowBox[{"Item", "[", 
+      RowBox[{"\"\<Lecture deployment\>\"", ",", 
+       RowBox[{"Alignment", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"Center", ",", "Center"}], "}"}]}]}], "]"}]}], 
+    "\[IndentingNewLine]", "\[IndentingNewLine]", ",", " ", 
+    RowBox[{"BaseStyle", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"FontFamily", " ", "\[Rule]", " ", "\"\<Roboto\>\""}], 
+      "}"}]}]}], "\[IndentingNewLine]", 
+   RowBox[{"(*", 
+    RowBox[{",", 
+     RowBox[{"\"\<AutoClose\>\"", "\[Rule]", ".5"}]}], "*)"}], 
+   "\[IndentingNewLine]", "]"}], "@", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "}"}], "\[IndentingNewLine]", ",", 
+    RowBox[{
+     RowBox[{"Do", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Pause", "[", "1", "]"}], ";", 
+        RowBox[{"LogWrite", "[", 
+         RowBox[{"RandomReal", "[", "]"}], "]"}]}], ",", 
+       RowBox[{"{", "2", "}"}]}], "]"}], ";"}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellLabel->"In[8]:=",ExpressionUUID->"c861fafb-bf7d-4412-b40f-40c7d8ddeb81"],
+
+Cell[BoxData[
+ TemplateBox[{FrontEndObject[
+    LinkObject["q77h6_shm", 3, 1]],33,
+   "FrontEndObject[LinkObject[\"q77h6_shm\", 3, 1]]","33",
+   "\"Progress dialog\""},
+  "NotebookObjectUnsaved"]], \
+"Echo",ExpressionUUID->"b08a7c60-be42-49b3-99c6-b29f4d1a667b"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"LogDialogProgressIndicator", "[", 
+    RowBox[{"\"\<test\>\"", ",", "True"}], "]"}], ";"}], 
+  "\[IndentingNewLine]"}]], \
+"Input",ExpressionUUID->"eb3cb2d2-b789-4a82-8fb5-3aafddc9db38"]
 }, Open  ]]
 },
 WindowSize->{861, 1022},
-WindowMargins->{{Automatic, 0}, {Automatic, 0}},
+WindowMargins->{{Automatic, 759}, {Automatic, 161}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
 FrontEndVersion->"11.3 for Microsoft Windows (64-bit) (March 6, 2018)",

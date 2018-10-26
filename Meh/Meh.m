@@ -33,8 +33,7 @@ ClearAll["`*", "`*`*"]
 Needs @ "GeneralUtilities`";
 
   
-  ToKeyValue;
-  OptionLookup;
+  ToKeyValue;  OptionLookup;  NotebookAliveQ;
 
   Meh;
   
@@ -52,21 +51,12 @@ Needs @ "GeneralUtilities`";
   
   MExpect;
   
+  APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
   
+  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  StructUnmatchedPositions;
   
-  APIMessage;
-  AmbientCheck;
-  PrintLoggerBlock;
-
-  CloudTopLevelFunction;
-  CloudDecorator;
+  LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
   
-  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  
-  StructUnmatchedPositions;
-  
-  LogDialogBlock;
-  LogDialog;
-  LogWrite;
   
 
 Begin["`Private`"];
@@ -77,8 +67,8 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
-(* ::Section:: *)
-(*Utilities*)
+(* ::Section::Closed:: *)
+(*Kernel Utilities*)
 
 
 ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling";
@@ -94,6 +84,15 @@ ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ Dig
 
 OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";
 OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name]
+
+
+(* ::Section::Closed:: *)
+(*FrontEnd Utilities*)
+
+
+
+NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
+NotebookAliveQ[___]:=False;
 
 
 (*TODO: absolute options
@@ -474,9 +473,15 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
 (*LogDialog*)
 
 
-(* ::Subsection:: *)
+$CurrentLogTag := "global";
+$CurrentLogDialog := LogDialog[$CurrentLogTag];
+
+
+(* ::Subsection::Closed:: *)
 (*CreateLogDialog*)
 
+
+CreateLogDialog::usage = "CreateLogDialog[tag_., opts___] creates a new log dialog associated with the tag.";
 
 CreateLogDialog // Options = {
   "Header" -> ""
@@ -487,14 +492,15 @@ CreateLogDialog[opts___Rule]:= CreateLogDialog[ $CurrentLogTag, opts ];
 
 CreateLogDialog[tag_String, opts___Rule]:= Module[
   { dockedCells
-  , progressIndicator = OptionLookup["ProgressIndicator", CreateLogDialog, opts] Replace[ Automatic -> ProgressIndicator[Appearance->"Percolate"] ]
+  , progressIndicator = OptionLookup["ProgressIndicator", CreateLogDialog, {opts}] // Replace[ Automatic -> ProgressIndicator[Appearance->"Percolate"] ]
+  , header = OptionLookup["Header", CreateLogDialog, {opts}]
   }
 
 , dockedCells = {Cell[ BoxData @ ToBoxes @ Grid[
     {{ 
-       Style[OptionValue["Header"], "Subsection"]
+       Style[header, "Subsection"]
      , PaneSelector[
-           { True -> Replace[ Automatic -> ProgressIndicator[Appearance->"Percolate"] ] @ Options["ProgressIndicator"]  
+           { True -> progressIndicator
            , False -> Spacer[{0,0}]
            }
          , Dynamic @ CurrentValue[EvaluationNotebook[], {TaggingRules, "processing"}]
@@ -519,7 +525,7 @@ CreateLogDialog[tag_String, opts___Rule]:= Module[
   , CellLabelPositioning -> Automatic
   , ShowCellLabel        -> True
   , WindowElements       -> {"VerticalScrollBar"}
-  , StyleDefinitions     ->"Dialog.nb"
+  , StyleDefinitions     -> "Dialog.nb"
   , WindowSize           -> 600{1, 1/GoldenRatio}
   , WindowTitle          -> "Progress dialog"  
   ]
@@ -543,7 +549,7 @@ LogDialog[tag_String]:= Module[{candidates}
 , candidates = Select[Notebooks[], CurrentValue[#, {TaggingRules, "tag"}] === tag &]
 ; Switch[candidates
   , {}
-  , Message[LogDialog::doesNotExist, tag]; $Failed
+  , MGenerateFailure[LogDialog::doesNotExist, tag]
   
   , {__NotebookObject}
   , If[Length @ candidates > 1, Message[LogDialog::duplicatedDialogs, tag]]
@@ -571,23 +577,22 @@ LogDialogBlock // Options = {
 
 LogDialogBlock[ patt___Rule ]:=LogDialogBlock[ $CurrentLogTag, patt];
 
-LogDialogBlock[tag_String, opts:OptionsPattern[{LogDialogBlock, CreateLogDialog, CreateDocument, BaseStyle -> {}}]]:= With[
+LogDialogBlock[tag_String, opts___Rule]:= With[
   { 
-    stopIndicator = TrueQ @ OptionValue @ "StopProgressIndicator"
-  , createNbOpts  = Sequence @@ FilterRules[{opts}, Options[CreateLogDialog]]
-  , autoClose     = OptionValue @ "AutoClose"
+    stopIndicator = TrueQ @ OptionLookup["StopProgressIndicator", LogDialogBlock, {opts}  ]
+  , autoClose     = OptionLookup["AutoClose", LogDialogBlock, {opts}  ]
   }
 , Function[
     expression
   , Block[ {$CurrentLogDialog, $CurrentLogTag = tag}
     , If[ 
         Not @ NotebookAliveQ @ LogDialog[tag]
-      , Echo @ CreateLogDialog[tag, createNbOpts]
+      , Echo @ CreateLogDialog[tag, opts]
       ]
     ; $CurrentLogDialog = LogDialog[tag]
-    ; With[{res = expression}
-      , If[stopIndicator, StopProgressIndicator[] ]
-      ; If[Positive @ autoClose, RunScheduledTask[NotebookClose @ #, {autoClose}]&@$CurrentLogDialog]
+    ; With[{res = expression, nb = $CurrentLogDialog}
+      , If[stopIndicator, LogDialogProgressIndicator @ False ]
+      ; If[Positive @ autoClose, RunScheduledTask[NotebookClose @ nb, {autoClose}]]
       ; res
       ]
     ]
@@ -597,43 +602,25 @@ LogDialogBlock[tag_String, opts:OptionsPattern[{LogDialogBlock, CreateLogDialog,
 
 
 (* ::Subsection::Closed:: *)
-(*WithOptions*)
+(*LogWrite*)
 
 
-WithOptions[sym_Symbol, opts___Rule]:=Function[
-  expr
-, Block[{OptionLookup}, OptionLookup = <|Options[sym], Reverse[{opts}]|>; expr]
-, HoldAll
-]
+LogWrite::usage = "LogWrite[tag_., msg] writes a message to a log dialog associated with the tag.";
 
+LogWrite[msg_]:=LogWrite[$CurrentLogDialog, msg];
 
-(* ::Subsection::Closed:: *)
-(*Utilities*)
+LogWrite[tag_, msg: Except[_Cell]]:= LogWrite[tag, Cell[BoxData @ ToBoxes @ msg, "Output", CellLabel->DateString[{"Time",".","Millisecond"}]]]
 
-
-StopProgressIndicator[]:=StopProgressIndicator @ $CurrentLogDialog;
-StopProgressIndicator[nb_NotebookObject]:= CurrentValue[nb, {TaggingRules, "processing"}] = False;
-
-$CurrentLogTag := "global";
-$CurrentLogDialog := LogDialog[$CurrentLogTag];
-
-NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
-NotebookAliveQ[___]:=False;
+LogWrite[nb_NotebookObject, msg_Cell]:=NotebookWrite[  nb, msg, After];
 
 
 
 (* ::Subsection:: *)
-(*LogWrite*)
+(*Dialog utilities*)
 
 
-LogWrite[msg_]:=LogWrite[$CurrentLogDialog, msg];
-
-LogWrite[nb_NotebookObject, msg_]:=NotebookWrite[
-  nb
-, Cell[BoxData @ ToBoxes @ msg, "Output", CellLabel->DateString[{"Time",".","Millisecond"}]]
-, After
-];
-
+LogDialogProgressIndicator[v : True | False]:=LogDialogProgressIndicator[ $CurrentLogDialog, v];
+LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingRules, "processing"}] = val;
 
 
 (* ::Section::Closed:: *)

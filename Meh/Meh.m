@@ -27,8 +27,8 @@
 
 BeginPackage["Meh`"];
 
-Unprotect["`*", "`*`*"]
-ClearAll["`*", "`*`*"]
+Unprotect["`*", "`*`*"];
+ClearAll["`*", "`*`*"];
 
 Needs @ "GeneralUtilities`";
 
@@ -83,7 +83,7 @@ ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ Dig
 
 
 OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";
-OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name]
+OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name];
 
 
 (* ::Section::Closed:: *)
@@ -134,7 +134,7 @@ foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
   Meh::invStructHttp = StringRiffle[
     {"Invalid HTTPRequest. Body values at positions:", "``", "HTTPRequest.Body needs to match:", "``"},
     "\n\n"
-  ]
+  ];
 
 
 inputToSignature // Attributes = {HoldAllComplete};
@@ -175,10 +175,10 @@ MFailByDefault[symbol_Symbol]:= (
 (*MFailureQ*)
 
 
-  MFailureQ[ _Failure|$Canceled|$Aborted|$Failed ]=True; 
+  MFailureQ[ _Failure | $Canceled | $Aborted | $Failed ]=True;
   (*Oone could think of an unevaluated pattern being here to but a) it adds complexity b) should not be enforced in case of symbolic wrappers/constructors. 
      So this will be handled by mHandle *)
-  MFailureQ[_]=False
+  MFailureQ[_]=False;
 
 
 (* ::Subsection:: *)
@@ -234,7 +234,7 @@ MGenerateFailure[
     tag     : _String | _Symbol, 
     msg     : HoldPattern[MessageName[head:_Symbol, name:_String]], 
     args    : _Association     
-  ] :=  MGenerateFailure[tag, msg, args, <||>]
+  ] :=  MGenerateFailure[tag, msg, args, <||>];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -258,7 +258,7 @@ MGenerateFailure[
     msg     : HoldPattern[ MessageName[head:_Symbol, name:_String]], 
     args    : ___,
     payload : _Association : <||>
-  ]:= MGenerateFailure[tag, msg, {args}, payload ]
+  ]:= MGenerateFailure[tag, msg, {args}, payload ];
 
 
 MGenerateAll[
@@ -272,7 +272,7 @@ MGenerateAll[
   );
 
 
-MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]
+(*MGenerateFailure[expr : $Failed | $Canceled | $Aborted]:=  Failure["err", <|"Message" -> ToString[expr]|>]*)
 (*TODO: I do not like "err"*)
 (*TODO: GeneralErrorQ needed, to detect whether a _?FailureQ is also one of $Failed | $Canceled | $Aborted or generated from them*)
 
@@ -297,7 +297,7 @@ input : MGenerateAll[whateverElse__]:= (
 ; Failure["argpatt"
   , <|"Message" -> ToString @ StringForm[MGenerateAll::argpatt, inputToSignature[input] ]|>
   ]  
-)
+);
 
 
 (* ::Subsection::Closed:: *)
@@ -315,12 +315,14 @@ input : MGenerateAll[whateverElse__]:= (
 
   MThrow[ f : _ ]:=Throw[f, $MehTag ];  
 
+(*
 
   MThrow[ f : $Failed | $Canceled | $Aborted ] := Throw[
     MGenerateFailure[f]
   , $MehTag
   ]
 
+*)
 
   MThrow[ f : ___ ] := Throw[
     MGenerateFailure[f]
@@ -357,7 +359,7 @@ MHandleResult[rules___]:=Function[
   , _?MFailureQ, MThrow
   , _          , Identity
   ] @ expr
-]
+];
 
 (* It should throw or return the input but it is up to the user what rules are put there *)
 (* It makes ThrowOnFailure redundant as it contains that rule by default. *)
@@ -382,7 +384,7 @@ MOnFailure[foo_][res_]:= res;
 MThrowOnFailure::usage = "expr // MThrowOnFailure MThrow-s expr if MFailureQ[expr]";
 
 MThrowOnFailure[res_?MFailureQ] := MThrow @ res;
-MThrowOnFailure[res_]:= res
+MThrowOnFailure[res_]:= res;
 
 
 (* ::Subsection::Closed:: *)
@@ -429,7 +431,7 @@ MFailureToHTTPResponse// ClearAll;
 (*TODO: failure generate? *)
 
 MFailureToHTTPResponse[ failure:($Failed|$Aborted|$Canceled) ]:= 
-  MFailureToHTTPResponse @ Failure["500","MessageTemplate" -> ToString[failure]]
+  MFailureToHTTPResponse @ Failure["500","MessageTemplate" -> ToString[failure]];
 
 
 
@@ -455,12 +457,12 @@ MFailureToHTTPResponse[
     |>
   , CharacterEncoding -> None (*because RawJSON already did it*)
   ]
-]
+];
 
 
 failureToStatusCode[ Failure[ tag_String?(StringMatchQ[DigitCharacter..]) , asso_ ] ]:= tag; 
 failureToStatusCode[ _?MFailureQ ]:= "500";
-failureToStatusCode // MFailByDefault
+failureToStatusCode // MFailByDefault;
 
 
 failureToPayload[ Failure[ tag_, asso_ ] ] := <|
@@ -609,7 +611,7 @@ LogWrite::usage = "LogWrite[tag_., msg] writes a message to a log dialog associa
 
 LogWrite[msg_]:=LogWrite[$CurrentLogDialog, msg];
 
-LogWrite[tag_, msg: Except[_Cell]]:= LogWrite[tag, Cell[BoxData @ ToBoxes @ msg, "Output", CellLabel->DateString[{"Time",".","Millisecond"}]]]
+LogWrite[tag_, msg: Except[_Cell]]:= LogWrite[tag, Cell[BoxData @ ToBoxes @ msg, "Output", CellLabel->DateString[{"Time",".","Millisecond"}]]];
 
 LogWrite[nb_NotebookObject, msg_Cell]:=NotebookWrite[  nb, msg, After];
 
@@ -639,7 +641,7 @@ LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingR
 (*TODO: this should rather be By-default-validate-input-with-respect-to-given-struct*)
 
 
-FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, FailOnInvalidStruct[function, structPattern, argPost]]
+FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, FailOnInvalidStruct[function, structPattern, argPost]];
 
 FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
   function::invStruct = Meh::invStruct;
@@ -677,7 +679,7 @@ StructMatch[
 StructMatch[
   {}
 , {Verbatim[Repeated][_KeyValuePattern,___]}
-] = MatchedElement[False]
+] = MatchedElement[False];
 
 
 StructMatch[expr:{__},{$multiPattern[kvp_KeyValuePattern,___]}]:=  StructMatch[#,kvp]& /@ expr;
@@ -867,7 +869,7 @@ MCheckValue[
     "ResponseLogFunction" -> (Print@ToString@ToString[Short@ToString@InputForm[#], StandardForm]&)
   };
 
-  PrintLoggerBlock[expr___] /; Not[$CloudEvaluation] := expr
+  PrintLoggerBlock[expr___] /; Not[$CloudEvaluation] := expr;
 
   PrintLoggerBlock[option__Rule]:= Function[expr, PrintLoggerBlock[expr, option], HoldAllComplete];
 

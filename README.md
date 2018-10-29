@@ -141,14 +141,14 @@ $Failed // MOnFailure[foo]
 ```Mathematica
 MCatch[ $Failed // MOnFailure[MThrow] ]
 ```
-> `Failure["err", <|"Message" -> "$Failed"|>]`
+> `$Failed`
 
 There is a shorter version for throwing though:
 
 ```Mathematica
 MCatch[ $Failed // MThrowOnFailure ]
 ```
-> `Failure["err", <|"Message" -> "$Failed"|>]`
+> `$Failed`
 
 ## Function construction
 

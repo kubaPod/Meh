@@ -21,13 +21,13 @@ VerificationTest[(* 1 *)
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MCatch / MThrow*)
 
 
 VerificationTest[
   MCatch[MThrow/@{$Failed,$Canceled,$Aborted}],
-  Failure["err", <|"Message" -> "$Failed"|>],
+  $Failed,
   TestID -> "cdeccebc-bfed-446e-a7ce-58e8a0ae48cc"
 ]
 
@@ -38,9 +38,9 @@ VerificationTest[
   , Failure[], Failure["General",<|"MessageTemplate"->"``","MessageParameters"->{1}|>]
   , whatever
   }
-, { Failure["err", <|"Message" -> "$Failed"|>]
-  , Failure["err", <|"Message" -> "$Canceled"|>]
-  , Failure["err", <|"Message" -> "$Aborted"|>]
+, { $Failed
+  , $Canceled
+  , $Aborted
   , Failure[]
   , Failure["General", <|"MessageTemplate" -> "``", "MessageParameters" -> {1}|>]
   , whatever
@@ -56,7 +56,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MGenerateFailure*)
 
 
@@ -80,7 +80,7 @@ VerificationTest[
 
 VerificationTest[
   MGenerateFailure[ $Aborted]
-, Failure["err", <|"Message" -> "$Aborted"|>]
+, $Aborted
 , TestID -> "eb78016c-3cab-4629-b789-d38e94a4679d"
 ]
 
@@ -216,7 +216,7 @@ VerificationTest[
   MCatch[
     $Aborted // MHandleResult[]; 1
   ]
-, Failure["err", <|"Message" -> "$Aborted"|>]
+, $Aborted
 , TestID -> "bf83f8f6-2d77-47b2-96b0-7dc4750e778d"
 ]
 
@@ -296,19 +296,19 @@ VerificationTest[
 
 VerificationTest[
   MCatch[ $Failed // MOnFailure[MThrow] ]
-, Failure["err", <|"Message" -> "$Failed"|>]
+, $Failed
 , TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656992"
 ]
 
 
 VerificationTest[
   MCatch[ $Failed // MThrowOnFailure ]
-, Failure["err", <|"Message" -> "$Failed"|>]
+, $Failed
 , TestID -> "846538e8-04f2-4f8a-baf5-afa5b6656993"
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Function construction*)
 
 
@@ -321,7 +321,7 @@ VerificationTest[
 , Failure["argpatt", <|"MessageTemplate" :> foo::argpatt, "MessageParameters" -> {"foo[Integer, Integer]"}|>]
 , {foo::argpatt}
 , TestID -> "853f20f1-3739-4f66-8449-083b6593ad55"
-];
+]
 
 
 (* ::Subsection:: *)
@@ -355,7 +355,7 @@ Block[{i=0}
 (*Control flow*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MFailureToHTTPResponse*)
 
 
@@ -410,7 +410,7 @@ VerificationTest[
 (*StructValidation*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*StructValidate*)
 
 
@@ -434,7 +434,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*StructUnmatchedPositions*)
 
 
@@ -477,7 +477,7 @@ VerificationTest[
 (*Utilities*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ToKeyValue*)
 
 

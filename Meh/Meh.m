@@ -90,7 +90,6 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
 (*FrontEnd Utilities*)
 
 
-
 NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
 NotebookAliveQ[___]:=False;
 
@@ -471,8 +470,8 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
 |>;
 
 
-(* ::Section:: *)
-(*LogDialog*)
+(* ::Section::Closed:: *)
+(*LogDialog (experimental)*)
 
 
 $CurrentLogTag := "global";
@@ -589,7 +588,7 @@ LogDialogBlock[tag_String, opts___Rule]:= With[
   , Block[ {$CurrentLogDialog, $CurrentLogTag = tag}
     , If[ 
         Not @ NotebookAliveQ @ LogDialog[tag]
-      , Echo @ CreateLogDialog[tag, opts]
+      , CreateLogDialog[tag, opts]
       ]
     ; $CurrentLogDialog = LogDialog[tag]
     ; With[{res = expression, nb = $CurrentLogDialog}
@@ -626,7 +625,7 @@ LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingR
 
 
 (* ::Section::Closed:: *)
-(*Struct Validation*)
+(*Struct Validation (beta)*)
 
 
 (*TODO: distinguis invalid from missing etc*)

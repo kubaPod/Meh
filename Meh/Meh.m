@@ -520,13 +520,14 @@ CreateLogDialog[tag_String, opts___Rule]:= Module[
 
 ; LogDialog[tag] = CreateDocument[
     {}
+  , StyleDefinitions     -> "Dialog.nb"
   , Sequence @@ FilterRules[{opts}, {Options[CreateDocument], BaseStyle -> {}}]  
   , DockedCells          -> dockedCells
   , TaggingRules         -> {"LogDialog" -> True, "processing" -> True, "logTag" -> tag}
   , CellLabelPositioning -> Automatic
   , ShowCellLabel        -> True
   , WindowElements       -> {"VerticalScrollBar"}
-  , StyleDefinitions     -> "Dialog.nb"
+  
   , WindowSize           -> 600{1, 1/GoldenRatio}
   , WindowTitle          -> "Progress dialog"  
   ]

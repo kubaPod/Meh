@@ -166,7 +166,7 @@ MFailByDefault[symbol_Symbol]:= (
   
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Core*)
 
 
@@ -219,7 +219,7 @@ MFailByDefault[symbol_Symbol]:= (
   MGenerateFailure::argpatt = MGenerateAll::argpatt = Meh::argpatt;
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*MGenerateFailure: message/failure like syntactic sugar*)
 
 
@@ -236,7 +236,7 @@ MGenerateFailure[
   ] :=  MGenerateFailure[tag, msg, args, <||>];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*MGenerateFailure; MGenerateAll*)
 
 
@@ -299,7 +299,7 @@ input : MGenerateAll[whateverElse__]:= (
 );
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MThrow / MCatch*)
 
 
@@ -312,7 +312,7 @@ input : MGenerateAll[whateverElse__]:= (
   MThrow // Attributes = {HoldAll};  
 
 
-  MThrow[ f : _ ]:=Throw[f, $MehTag ];  
+  MThrow[ f : Except[_MessageName] ]:=Throw[f, $MehTag ];  
 
 (*
 

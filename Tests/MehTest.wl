@@ -56,7 +56,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MGenerateFailure*)
 
 
@@ -105,8 +105,18 @@ VerificationTest[
 (*message::name throw/throwAll*)
 
 
+(*TODO: what to do with undefined::message? *)
+
+
 (* ::Subsubsection:: *)
 (*Message like syntax *)
+
+
+VerificationTest[
+  MCatch@MThrow[General::argpatt]
+, Failure["argpatt", <|"MessageTemplate" :> General::argpatt, "MessageParameters" -> {}|>]
+, TestID -> "mthrow-messagename-argumentsfree"
+]
 
 
 VerificationTest[
@@ -165,7 +175,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*payload*)
 
 

@@ -453,51 +453,67 @@ VerificationTest[
 
 
 (* ::Subsection:: *)
-(*UnmatchedContents*)
+(*MInvalidContents*)
 
 
 VerificationTest[
-  UnmatchedContents @@ $basicValidationTestTrue
+  MInvalidContents @@ $basicValidationTestTrue
 , {}
 , TestID -> "empty unmatched contents"
 ]
 
 
 VerificationTest[
-  UnmatchedContents @@ $basicValidationTestFalse
-, { {Key["a"], Key["c"]} -> MatchedElement[False, Integer]
-  , {Key["a"], Key["d"]} -> MatchedElement[False, Integer]
+  MInvalidContents @@ $basicValidationTestFalse
+, { {Key["a"], Key["c"]} -> MValidationResult[False, Integer]
+  , {Key["a"], Key["d"]} -> MValidationResult[False, Integer]
   }
 , TestID -> "basic non empty unmatched contents"
 ]
 
 
 (* ::Subsection:: *)
-(*FailOnInvalidStruct*)
+(*MValidateByDefault*)
 
 
 ClearAll[foo];
-$fooPatt = KeyValuePattern[{"a" -> _Integer}];
-foo // FailOnInvalidStruct[ $fooPatt ]
+$fooPatt = KeyValuePattern[{"a" -> _Integer, "c" -> _String}];
+foo // MValidateByDefault[ $fooPatt ]
 foo[ in: $fooPatt]:= in["a"]
 
 
 VerificationTest[
-  foo @ <|"a" -> 1|>
+  foo @ <|"a" -> 1, "c" -> "String"|>
 , 1
-, TestID -> "9e1c0021-71e8-4820-8ca9-107726dc35dc"
+, TestID -> "basic arg validation true"
 ]
 
 
 VerificationTest[
-  foo @ <|"b" -> 1|>
-, Failure["400", <|"MessageTemplate" :> foo::invStruct, "MessageParameters" -> {foo, "\t{Key[a]}", "\t<|a -> _Integer|>"}|>]
-, {foo::invStruct}
-, TestID -> "f6b5fd29-4899-4f06-8021-2f55c3ec4d02"
+  foo @ <|"b" -> 1, "c" -> {1}|>
+, Failure["400", <|"MessageTemplate" :> foo::InvalidArg, "MessageParameters" -> {1, "\t{Key[c]}\tList\n\t{Key[a]}\tMissing[]", "\t<|a -> _Integer, c -> _String|>"}|>]
+, {foo::InvalidArg}
+, TestID -> "basic arg validation false"
 ]
 
 
-(* ::Section::Closed:: *)
+VerificationTest[
+  foo[1,2]
+, Failure["400", <|"MessageTemplate" :> foo::InvalidArg, "MessageParameters" -> {1, "\t{}\tInteger", "\t<|a -> _Integer, c -> _String|>"}|>]
+, {foo::InvalidArg}
+, TestID -> "basic arbitrary arg validation false"
+]
+
+
+VerificationTest[
+  foo[]
+, Failure["400", <|"MessageTemplate" :> foo::NoArg, "MessageParameters" -> {foo}|>]
+, {foo::NoArg}
+, TestID -> "no arguments validation"
+]
+
+
+(* ::Section:: *)
 (*Utilities*)
 
 

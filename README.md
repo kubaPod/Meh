@@ -187,7 +187,7 @@ MValidate[
 ```Mathematica
 ClearAll[foo];
 $fooPatt = KeyValuePattern[{"a" -> _Integer}];
-foo // FailOnInvalidStruct[ $fooPatt ]
+foo // MValidateByDefault[ $fooPatt ]
 foo[ in: $fooPatt]:= in["a"]
 
 

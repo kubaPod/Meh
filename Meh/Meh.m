@@ -53,7 +53,7 @@ Needs @ "GeneralUtilities`";
   
   APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
   
-  FailOnInvalidStruct;  MValidateScan;  MatchedElement;  MValidate;  UnmatchedContents;
+  MValidateByDefault;  MValidateScan;  MValidationResult;  MValidate;  MInvalidContents;
   
   LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
   
@@ -108,7 +108,7 @@ foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
 *)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Meh misc*)
 
 
@@ -121,10 +121,12 @@ foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
   
   Meh::invInput = "Invalid input for ``";
 
-  Meh::invStruct = StringRiffle[
-    {"``: Invalid values at positions:", "``", "Input needs to match:","``"},
-    "\n\n"
+  Meh::InvalidArg = StringRiffle[
+    {"Argument No. `` has invalid structure at:", "``", "It needs to match:","``"},
+    "\n"
   ];
+  
+  Meh::NoArg = "Function called without arguments.";
 
   Meh::invStructHttp = StringRiffle[
     {"Invalid HTTPRequest. Body values at positions:", "``", "HTTPRequest.Body needs to match:", "``"},
@@ -626,32 +628,37 @@ LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingR
 
 
 (* ::Section:: *)
-(*Struct Validation (beta)*)
+(*Validation (beta)*)
 
 
 (*TODO: distinguis invalid from missing etc*)
 (*TODO: strict patterns: currently additional keys are ignored but maybe they should be, optionally, considered invalid*)
-(*TODO: shouldn't FailOnInvalidStruct be MFailOnInvalidStruct? *)
+(*TODO: shouldn't MValidateByDefault be MFailOnInvalidStruct? *)
 
 
 (* ::Subsection:: *)
-(*FailOnInvalidStruct*)
+(*MValidateByDefault*)
 
 
 (*TODO: this should rather be By-default-validate-input-with-respect-to-given-struct*)
 
 
-FailOnInvalidStruct[structPattern_, argPost_Integer : 1]:= Function[function, FailOnInvalidStruct[function, structPattern, argPost]];
+MValidateByDefault[structPattern_, argPost_Integer : 1]:= Function[function, MValidateByDefault[function, structPattern, argPost]];
 
-FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
-  function::invStruct = Meh::invStruct;
-  function[input___]:=MGenerateAll[
-    "400"
-  , function::invStruct
-  , function
-  , StructUnmatchedPositions[{input}[[argPos]], structPattern, 3] // StringRiffle[#, {"\t", "\n\t",""}]&
-  , "\t" <> ToString[structPattern /. KeyValuePattern->Association]
-  ]
+MValidateByDefault[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
+  function::NoArg = Meh::NoArg;
+  function::InvalidArg = Meh::InvalidArg;  
+  
+  (*we don't want additional function[]:= downvalue in case there already is one*)
+  function[input___] /; Length[{input}] < 1 :=MGenerateAll[ "400", function::NoArg, function  ];
+  
+  function[input___]:= MGenerateAll[
+      "400"
+    , function::InvalidArg
+    , argPos
+    , {#, ToString @ #2[[2]]}& @@@ MInvalidContents[{input}[[argPos]], structPattern, 3] // StringRiffle[#, "\n", {"\t", "\t", ""}]&
+    , "\t" <> ToString[structPattern /. KeyValuePattern->Association]
+    ]
 );
 
 
@@ -660,17 +667,17 @@ FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
 
 
 MValidateScan // ClearAll;
-MatchedElement // ClearAll;
-MatchedElement // Protect;
+MValidationResult // ClearAll;
+MValidationResult // Protect;
 
 (*TODO: handle empty lists for Repeated*)
 (*TODO: held expressions? *)
 (*TODO: missing *)
 (*TODO: strict KVP *)
-MatchedElement::usage = "MatchedElement[True] or Matched[False, payload_]. MatchedElement is a symbolic wrapper used by MValidateScan to mark nested results of matching.";
+MValidationResult::usage = "MValidationResult[True] or Matched[False, payload_]. MValidationResult is a symbolic wrapper used by MValidateScan to mark nested results of matching.";
 
 
-MValidateScan::usage = "MValidateScan[expr, patter] returns expr with its elements replaced by MatchedElement[True] or MatchedElement[False, _]." <>
+MValidateScan::usage = "MValidateScan[expr, patter] returns expr with its elements replaced by MValidationResult[True] or MValidationResult[False, _]." <>
   " Currently it only scans KeyValuePatterns and other expressions are just MatchQ-ed.";
 
 
@@ -691,14 +698,14 @@ MValidateScan[
 
 
 (*This needs to be done better now, currently it is supposed to used during merging*)
-MValidateScan[ _ ]:=MatchedElement[False, Missing[]]
+MValidateScan[ _ ]:=MValidationResult[False, Missing[]]
 
 
 (* I don't exactly remember why it is here, probably because MatchQ[{},KeyValuePattern[{}]] is True *)
 MValidateScan[
   {}
 , { Verbatim[Repeated][_KeyValuePattern, ___] }
-] = MatchedElement[False];
+] = MValidationResult[False];
 
 
 (* Matching  uniform datasets *)
@@ -713,11 +720,11 @@ MValidateScan[
 (*Generic case*)
 MValidateScan[
   expr_
-, kvp : Except[_KeyValuePattern] 
+, kvp_ (*: Except[_KeyValuePattern] *)
 ]:=  If[ 
   MatchQ[expr, kvp]
-, MatchedElement[True]
-, MatchedElement[False, Head @ expr]  
+, MValidationResult[True]
+, MValidationResult[False, Head @ expr]
 ];
 
 
@@ -736,20 +743,20 @@ MValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
 
 MValidate[patt_]:=Function[expr, MValidate[expr, patt]];
 
-MValidate[expr_, patt_]:=FreeQ[MValidateScan[expr,patt], MatchedElement[False, ___]];
+MValidate[expr_, patt_]:=FreeQ[MValidateScan[expr,patt], MValidationResult[False, ___]];
 
 
 (* ::Subsection::Closed:: *)
-(*UnmatchedContents*)
+(*MInvalidContents*)
 
 
-UnmatchedContents // ClearAll; (*TODO: position and element*)
-UnmatchedContents::usage = "UnmatchedContents[expr, patt] returns {position -> MatchedElement[False,_] ..} from MValidateScan[expr, patt]."
-UnmatchedContents[expr_, patt_]:=  MValidateScan[expr,patt] // Function[mExpr
-  , Thread[# -> Extract[mExpr, #]]& @ Position[mExpr, MatchedElement[False, ___]]
+MInvalidContents // ClearAll; (*TODO: position and element*)
+MInvalidContents::usage = "MInvalidContents[expr, patt] returns {position -> MValidationResult[False,_] ..} from MValidateScan[expr, patt]."
+MInvalidContents[expr_, patt_]:=  MValidateScan[expr,patt] // Function[mExpr
+  , Thread[# -> Extract[mExpr, #]]& @ Position[mExpr, MValidationResult[False, ___]]
 ];
 
-UnmatchedContents[expr_, patt_, n_Integer?Positive]:= Take[UnmatchedContents[expr, patt], UpTo[n]];
+MInvalidContents[expr_, patt_, n_Integer?Positive]:= Take[MInvalidContents[expr, patt], UpTo[n]];
 
 
 (* ::Section::Closed:: *)

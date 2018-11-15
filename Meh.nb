@@ -1043,13 +1043,99 @@ Cell[BoxData[
    RowBox[{"LogDialogProgressIndicator", "[", 
     RowBox[{"\"\<test\>\"", ",", "True"}], "]"}], ";"}], 
   "\[IndentingNewLine]"}]], \
-"Input",ExpressionUUID->"eb3cb2d2-b789-4a82-8fb5-3aafddc9db38"]
+"Input",ExpressionUUID->"eb3cb2d2-b789-4a82-8fb5-3aafddc9db38"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"test", "=", 
+  RowBox[{"List", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"<|", 
+     RowBox[{
+      RowBox[{"\"\<a\>\"", "\[Rule]", "1"}], ",", 
+      RowBox[{"\"\<b\>\"", "\[Rule]", "2"}]}], "|>"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"KeyValuePattern", "[", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"\"\<a\>\"", "\[Rule]", "_Integer"}], ",", 
+       RowBox[{"\"\<b\>\"", "\[Rule]", "_String"}], ",", 
+       RowBox[{"\"\<c\>\"", "\[Rule]", "_Symbol"}]}], "}"}], "]"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellLabel->"In[23]:=",ExpressionUUID->"990acfa2-b4be-483d-a4ac-ce7211714273"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"\[LeftAssociation]", 
+    RowBox[{
+     RowBox[{"\<\"a\"\>", "\[Rule]", "1"}], ",", 
+     RowBox[{"\<\"b\"\>", "\[Rule]", "2"}]}], "\[RightAssociation]"}], ",", 
+   RowBox[{"KeyValuePattern", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"\<\"a\"\>", "\[Rule]", "_Integer"}], ",", 
+      RowBox[{"\<\"b\"\>", "\[Rule]", "_String"}], ",", 
+      RowBox[{"\<\"c\"\>", "\[Rule]", "_Symbol"}]}], "}"}], "]"}]}], 
+  "}"}]], "Output",
+ CellLabel->"Out[23]=",ExpressionUUID->"73b2b728-ff1d-42e2-887b-38b869069e38"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"Extract", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"Position", "[", 
+       RowBox[{"#", ",", 
+        RowBox[{"MatchedElement", "[", 
+         RowBox[{"False", ",", "_"}], "]"}]}], "]"}]}], "]"}], "&"}], "[", 
+   "\[IndentingNewLine]", 
+   RowBox[{"StructMatch", "@@", "test"}], "\[IndentingNewLine]", "]"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellLabel->"In[28]:=",ExpressionUUID->"2fc0186d-d6ce-4b5c-a239-c4fcc22f3501"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"MatchedElement", "[", 
+    RowBox[{"False", ",", "Integer"}], "]"}], ",", 
+   RowBox[{"MatchedElement", "[", 
+    RowBox[{"False", ",", "_Missing"}], "]"}]}], "}"}]], "Output",
+ CellLabel->"Out[28]=",ExpressionUUID->"8713ec0c-98c3-4cd9-8b1f-28a70398fc93"]
+}, Open  ]],
+
+Cell[BoxData["Strict"], \
+"Input",ExpressionUUID->"85653ddc-4221-47a8-953f-ff017d5444d8"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"KeyValuePattern", "[", 
+  RowBox[{
+   RowBox[{"{", "}"}], ",", "Strict"}], "]"}]], "Input",
+ CellLabel->"In[14]:=",ExpressionUUID->"2f2e39c9-4c39-4605-a65a-fa8435925bb6"],
+
+Cell[BoxData[
+ RowBox[{"KeyValuePattern", "[", 
+  RowBox[{
+   RowBox[{"{", "}"}], ",", "Strict"}], "]"}]], "Output",
+ CellLabel->"Out[14]=",ExpressionUUID->"bff6a68d-501d-489e-8e4a-e0c2508439ac"]
+}, Open  ]],
+
+Cell[BoxData["OrderlessPatternSequence"], \
+"Input",ExpressionUUID->"59f77318-894d-4060-8a51-765a1f5b92b4"]
 }, Open  ]]
 },
-WindowSize->{861, 1022},
-WindowMargins->{{Automatic, 759}, {Automatic, 161}},
+WindowSize->{1347, 1199},
+WindowMargins->{{Automatic, 410}, {70, Automatic}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
+Magnification:>1.3 Inherited,
 FrontEndVersion->"11.3 for Microsoft Windows (64-bit) (March 6, 2018)",
 StyleDefinitions->"Default.nb"
 ]

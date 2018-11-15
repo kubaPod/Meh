@@ -3,13 +3,17 @@
 Needs @ "Meh`";
 
 
+(* ::Section::Closed:: *)
+(*Core*)
+
+
 outputFormString = ToString[#, Symbol["OutputForm"]]& ;
 foo::argx = "foo `arg`";
 foo::argy = "foo `1`";
 foo::string = "`` is not a String";
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MFailureQ*)
 
 
@@ -21,7 +25,7 @@ VerificationTest[(* 1 *)
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MCatch / MThrow*)
 
 
@@ -101,7 +105,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*message::name throw/throwAll*)
 
 
@@ -218,7 +222,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MHandleResult*)
 
 
@@ -286,7 +290,7 @@ List@"string" // MHandleResult[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*M*OnFailure*)
 
 
@@ -318,11 +322,11 @@ VerificationTest[
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Function construction*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FailByDefault*)
 
 
@@ -334,7 +338,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*RetryOnFailure*)
 
 
@@ -361,7 +365,7 @@ Block[{i=0}
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Control flow*)
 
 
@@ -420,6 +424,12 @@ VerificationTest[
 (*StructValidation*)
 
 
+$basicValidationTest = { 
+  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
+, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _Integer, "d" -> _Integer}]}]  
+}
+
+
 (* ::Subsection:: *)
 (*StructValidate*)
 
@@ -449,7 +459,7 @@ VerificationTest[
 
 
 VerificationTest[
-  StructUnmatchedPositions[
+  UnmatchedContents[
   <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
 , KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
 ]
@@ -483,7 +493,7 @@ VerificationTest[
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Utilities*)
 
 

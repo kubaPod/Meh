@@ -53,7 +53,7 @@ Needs @ "GeneralUtilities`";
   
   APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
   
-  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  StructUnmatchedPositions;
+  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  UnmatchedContents;
   
   LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
   
@@ -67,11 +67,11 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
-(* ::Section::Closed:: *)
-(*Kernel Utilities*)
+(* ::Section:: *)
+(*Association Utilities*)
 
 
-ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling";
+ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symbol\" -> symbol which shortens association assembling.";
 
 ToKeyValue // Attributes = {HoldAll, Listable};
 
@@ -80,10 +80,6 @@ ToKeyValue // MFailByDefault;
 ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..] -> sym;
 
 
-
-
-OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";
-OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name];
 
 
 (* ::Section::Closed:: *)
@@ -166,6 +162,10 @@ MFailByDefault[symbol_Symbol]:= (
   
 
 
+OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";
+OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name];
+
+
 (* ::Section:: *)
 (*Core*)
 
@@ -180,7 +180,7 @@ MFailByDefault[symbol_Symbol]:= (
   MFailureQ[_]=False;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MGenerateFailure; MGenerateAll*)
 
 
@@ -299,7 +299,7 @@ input : MGenerateAll[whateverElse__]:= (
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MThrow / MCatch*)
 
 
@@ -625,7 +625,7 @@ LogDialogProgressIndicator[v : True | False]:=LogDialogProgressIndicator[ $Curre
 LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingRules, "processing"}] = val;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Struct Validation (beta)*)
 
 
@@ -664,49 +664,92 @@ MatchedElement // ClearAll;
 MatchedElement // Protect;
 
 (*TODO: handle empty lists for Repeated*)
-$multiPattern = Verbatim /@ ( Repeated|RepeatedNull );
+(*TODO: held expressions? *)
+(*TODO: missing *)
+(*TODO: strict KVP *)
+MatchedElement::usage = "MatchedElement[True] or Matched[False, payload_]. MatchedElement is a symbolic wrapper used by StructMatch to mark nested results of matching.";
 
 
+StructMatch::usage = "StructMatch[expr, patter] returns expr with its elements replaced by MatchedElement[True] or MatchedElement[False, _]." <>
+  " Currently it only scans KeyValuePatterns and other expressions are just MatchQ-ed.";
+
+
+(* Matching associations *)
 StructMatch[
-  expr : KeyValuePattern[{}]
-, kvp_KeyValuePattern
+  expr    : KeyValuePattern[{}]
+, pattern : _KeyValuePattern
 ]:=  Module[
-  {kvpAsso = Association @@ kvp}
-, Merge[ Apply[StructMatch] ] @ { KeyTake[Keys[kvpAsso]] @ expr, kvpAsso}
+  { patternAssociation = Association @@ pattern }
+, Merge[ 
+    { 
+      KeyTake[Keys[patternAssociation]] @ expr (* we don't care about additional keys now*)
+    , patternAssociation
+    }
+  , Apply[StructMatch] 
+  ]  
 ];
 
 
+(*This needs to be done better now, currently it is supposed to used during merging*)
+StructMatch[ _ ]:=MatchedElement[False, Missing[]] 
+
+
+(* I don't exactly remember why it is here, probably because MatchQ[{},KeyValuePattern[{}]] is True *)
 StructMatch[
   {}
-, {Verbatim[Repeated][_KeyValuePattern,___]}
+, { Verbatim[Repeated][_KeyValuePattern, ___] }
 ] = MatchedElement[False];
 
 
-StructMatch[expr:{__},{$multiPattern[kvp_KeyValuePattern,___]}]:=  StructMatch[#,kvp]& /@ expr;
+(* Matching  uniform datasets *)
+
+$multiPattern = Verbatim /@ ( Repeated|RepeatedNull );
+
+StructMatch[ 
+  expr : {__}
+, { $multiPattern[kvp_KeyValuePattern,___]}]:=  StructMatch[#,kvp]& /@ expr;
 
 
-StructMatch[ expr_, kvp:Except[_KeyValuePattern] ]:=  MatchedElement[ MatchQ[expr,kvp] ];
+(*Generic case*)
+StructMatch[ 
+  expr_
+, kvp : Except[_KeyValuePattern] 
+]:=  If[ 
+  MatchQ[expr, kvp]
+, MatchedElement[True]
+, MatchedElement[False, Head @ expr]  
+];
 
 
-StructMatch[arg___]:=MatchedElement[False];
+
+StructMatch // MFailByDefault
 
 
 (* ::Subsection::Closed:: *)
 (*StructValidate*)
 
 
+StructValidate::usage = "StructValidate[expr, patt] or StructValidate[patt] @ expr returns True/False if StructMatch[expr, patt] was successful/not successful.";
+
+
 StructValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
+
 StructValidate[patt_]:=Function[expr, StructValidate[expr, patt]];
-StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False]];
+
+StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False, ___]];
 
 
-(* ::Subsection:: *)
-(*StructUnmatchedPositions*)
+(* ::Subsection::Closed:: *)
+(*UnmatchedContents*)
 
 
-StructUnmatchedPositions // ClearAll;
-StructUnmatchedPositions[expr_, patt_]:= Replace[Position[StructMatch[expr,patt], MatchedElement[False]], {} -> 0, {1}];
-StructUnmatchedPositions[expr_, patt_, n_Integer?Positive]:= Take[StructUnmatchedPositions[expr, patt], UpTo[n]];
+UnmatchedContents // ClearAll; (*TODO: position and element*)
+UnmatchedContents::usage = "UnmatchedContents[expr, patt] returns {position -> MatchedElement[False,_] ..} from StructMatch[expr, patt]."
+UnmatchedContents[expr_, patt_]:=  StructMatch[expr,patt] // Function[mExpr
+  , Thread[# -> Extract[mExpr, #]]& @ Position[mExpr, MatchedElement[False, ___]]
+];
+
+UnmatchedContents[expr_, patt_, n_Integer?Positive]:= Take[UnmatchedContents[expr, patt], UpTo[n]];
 
 
 (* ::Section::Closed:: *)

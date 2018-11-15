@@ -53,7 +53,7 @@ Needs @ "GeneralUtilities`";
   
   APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
   
-  FailOnInvalidStruct;  StructMatch;  MatchedElement;  StructValidate;  UnmatchedContents;
+  FailOnInvalidStruct;  MValidateScan;  MatchedElement;  MValidate;  UnmatchedContents;
   
   LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
   
@@ -656,10 +656,10 @@ FailOnInvalidStruct[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
 
 
 (* ::Subsection:: *)
-(*StructMatch*)
+(*MValidateScan*)
 
 
-StructMatch // ClearAll;
+MValidateScan // ClearAll;
 MatchedElement // ClearAll;
 MatchedElement // Protect;
 
@@ -667,15 +667,15 @@ MatchedElement // Protect;
 (*TODO: held expressions? *)
 (*TODO: missing *)
 (*TODO: strict KVP *)
-MatchedElement::usage = "MatchedElement[True] or Matched[False, payload_]. MatchedElement is a symbolic wrapper used by StructMatch to mark nested results of matching.";
+MatchedElement::usage = "MatchedElement[True] or Matched[False, payload_]. MatchedElement is a symbolic wrapper used by MValidateScan to mark nested results of matching.";
 
 
-StructMatch::usage = "StructMatch[expr, patter] returns expr with its elements replaced by MatchedElement[True] or MatchedElement[False, _]." <>
+MValidateScan::usage = "MValidateScan[expr, patter] returns expr with its elements replaced by MatchedElement[True] or MatchedElement[False, _]." <>
   " Currently it only scans KeyValuePatterns and other expressions are just MatchQ-ed.";
 
 
 (* Matching associations *)
-StructMatch[
+MValidateScan[
   expr    : KeyValuePattern[{}]
 , pattern : _KeyValuePattern
 ]:=  Module[
@@ -685,17 +685,17 @@ StructMatch[
       KeyTake[Keys[patternAssociation]] @ expr (* we don't care about additional keys now*)
     , patternAssociation
     }
-  , Apply[StructMatch] 
+  , Apply[MValidateScan]
   ]  
 ];
 
 
 (*This needs to be done better now, currently it is supposed to used during merging*)
-StructMatch[ _ ]:=MatchedElement[False, Missing[]] 
+MValidateScan[ _ ]:=MatchedElement[False, Missing[]]
 
 
 (* I don't exactly remember why it is here, probably because MatchQ[{},KeyValuePattern[{}]] is True *)
-StructMatch[
+MValidateScan[
   {}
 , { Verbatim[Repeated][_KeyValuePattern, ___] }
 ] = MatchedElement[False];
@@ -705,13 +705,13 @@ StructMatch[
 
 $multiPattern = Verbatim /@ ( Repeated|RepeatedNull );
 
-StructMatch[ 
+MValidateScan[
   expr : {__}
-, { $multiPattern[kvp_KeyValuePattern,___]}]:=  StructMatch[#,kvp]& /@ expr;
+, { $multiPattern[kvp_KeyValuePattern,___]}]:=  MValidateScan[#,kvp]& /@ expr;
 
 
 (*Generic case*)
-StructMatch[ 
+MValidateScan[
   expr_
 , kvp : Except[_KeyValuePattern] 
 ]:=  If[ 
@@ -722,21 +722,21 @@ StructMatch[
 
 
 
-StructMatch // MFailByDefault
+MValidateScan // MFailByDefault
 
 
 (* ::Subsection::Closed:: *)
-(*StructValidate*)
+(*MValidate*)
 
 
-StructValidate::usage = "StructValidate[expr, patt] or StructValidate[patt] @ expr returns True/False if StructMatch[expr, patt] was successful/not successful.";
+MValidate::usage = "MValidate[expr, patt] or MValidate[patt] @ expr returns True/False if MValidateScan[expr, patt] was successful/not successful.";
 
 
-StructValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
+MValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
 
-StructValidate[patt_]:=Function[expr, StructValidate[expr, patt]];
+MValidate[patt_]:=Function[expr, MValidate[expr, patt]];
 
-StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False, ___]];
+MValidate[expr_, patt_]:=FreeQ[MValidateScan[expr,patt], MatchedElement[False, ___]];
 
 
 (* ::Subsection::Closed:: *)
@@ -744,8 +744,8 @@ StructValidate[expr_, patt_]:=FreeQ[StructMatch[expr,patt], MatchedElement[False
 
 
 UnmatchedContents // ClearAll; (*TODO: position and element*)
-UnmatchedContents::usage = "UnmatchedContents[expr, patt] returns {position -> MatchedElement[False,_] ..} from StructMatch[expr, patt]."
-UnmatchedContents[expr_, patt_]:=  StructMatch[expr,patt] // Function[mExpr
+UnmatchedContents::usage = "UnmatchedContents[expr, patt] returns {position -> MatchedElement[False,_] ..} from MValidateScan[expr, patt]."
+UnmatchedContents[expr_, patt_]:=  MValidateScan[expr,patt] // Function[mExpr
   , Thread[# -> Extract[mExpr, #]]& @ Position[mExpr, MatchedElement[False, ___]]
 ];
 

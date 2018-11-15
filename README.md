@@ -36,7 +36,7 @@ It is mostly about syntactic sugar for `Catch/Throw` to cope well with `Messages
 
 Basic rules:
 
-- core symbols start with `M`: `MThrow`, `MFailureQ` etc. Sub-utilities do not e.g.: `StructValidate`.
+- core symbols start with `M`: `MThrow`, `MFailureQ` etc. Sub-utilities do not e.g.: `MValidate`.
 - `MGenerate`, `MGenerateAll`, `MThrow`, `MThrowAll` have the same syntax with respect to Message/Failure related cases.  
   - `-All` means that a `Message` will be issued too. That also implies only a valid message input can be used while simple `MThrow` can accept whatever input you give it.
   - `Generate` just creates e.g. a `Failure` while `MThrow` throws is to a nearest enclosing `MCatch`.
@@ -177,7 +177,7 @@ StructUnmatchedPositions[
 > `{ {Key["a"], Key["c"]}   ,   {Key["a"], Key["d"]} }`
 
 ```Mathematica
-StructValidate[
+MValidate[
   <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
 , KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _Integer, "d" -> _Integer}]}]  
 ]

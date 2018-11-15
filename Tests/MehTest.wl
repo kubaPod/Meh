@@ -424,47 +424,51 @@ VerificationTest[
 (*StructValidation*)
 
 
-$basicValidationTest = { 
+$basicValidationTestTrue = { 
   <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
 , KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _Integer, "d" -> _Integer}]}]  
-}
+};
+$basicValidationTestFalse = {
+  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
+, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
+};
 
 
 (* ::Subsection:: *)
-(*StructValidate*)
+(*MValidate*)
 
 
 VerificationTest[
-  StructValidate[
-  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
-, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _Integer, "d" -> _Integer}]}]  
-]
+  MValidate @@ $basicValidationTestTrue
 , True
-, TestID -> "d6201a9f-2904-449f-b3ed-e504292df7c7"
+, TestID -> "basic validation test true"
 ]
 
 
 VerificationTest[
-  StructValidate[
-  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
-, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
-]
+  MValidate @@ $basicValidationTestFalse
 , False
-, TestID -> "a1add116-bcfa-4405-b0e5-b00e08793892"
+, TestID -> "basic validation test false"
 ]
 
 
 (* ::Subsection:: *)
-(*StructUnmatchedPositions*)
+(*UnmatchedContents*)
 
 
 VerificationTest[
-  UnmatchedContents[
-  <|"a" -> <|"b" -> 2, "c"->3, "d" -> 4|>|>
-, KeyValuePattern[{"a" -> KeyValuePattern[{"b" -> _Integer, "c" -> _String, "d" -> _List}]}]  
+  UnmatchedContents @@ $basicValidationTestTrue
+, {}
+, TestID -> "empty unmatched contents"
 ]
-, {{Key["a"], Key["c"]}, {Key["a"], Key["d"]}}
-, TestID -> "3669a3c5-2875-4984-bd6d-35e620cec327"
+
+
+VerificationTest[
+  UnmatchedContents @@ $basicValidationTestFalse
+, { {Key["a"], Key["c"]} -> MatchedElement[False, Integer]
+  , {Key["a"], Key["d"]} -> MatchedElement[False, Integer]
+  }
+, TestID -> "basic non empty unmatched contents"
 ]
 
 

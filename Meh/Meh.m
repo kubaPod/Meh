@@ -53,7 +53,7 @@ Needs @ "GeneralUtilities`";
   
   APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
   
-  MValidateByDefault;  MValidateScan;  MValidationResult;  MValidate;  MInvalidContents;
+  MValidateByDefault;  MValidateScan;  MValidationResult;  MValidate;  MInvalidContents; MValidQ;
   
   LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
   
@@ -662,7 +662,7 @@ MValidateByDefault[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MValidateScan*)
 
 
@@ -732,7 +732,7 @@ MValidateScan[
 ]:=  If[ 
   MatchQ[expr, pattern]
 , MValidationResult[True]
-, MValidationResult[False, $FailedValidationPayloadFunction[ expr, pattern]]
+, MValidationResult[False, $FailedValidationPayloadFunction[ expr, pattern]] (*TODO: make this symbol na option*)
 ];
 
 
@@ -740,21 +740,42 @@ MValidateScan[
 MValidateScan // MFailByDefault
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MValidate*)
 
 
 MValidate::usage = "MValidate[expr, patt] or MValidate[patt] @ expr returns True/False if MValidateScan[expr, patt] was successful/not successful.";
+MValidate::Invalid = "Expression did not pass validation."
 
 
-MValidate // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
+ (*not sure it makes sense, why not MatchQ[expr, patt]?*)
 
 MValidate[patt_]:=Function[expr, MValidate[expr, patt]];
 
-MValidate[expr_, patt_]:=FreeQ[MValidateScan[expr,patt], MValidationResult[False, ___]];
+MValidate[expr_, patt_]:= MInvalidContents[expr,patt] // MHandleResult[
+  {}, Function @ True,
+  _ , Function[contents, MGenerateFailure[MValidate::Invalid, {}, <|"InvalidContents" -> contents|>]]
+];
 
 
-(* ::Subsection::Closed:: *)
+Success["PatternValidated",<||>]
+
+
+(* ::Subsection:: *)
+(*MValidQ*)
+
+
+MValidQ::usage = "MValidQ[expr, patt] or MValidQ[patt] @ expr returns True/False if MValidateScan[expr, patt] was successful/not successful.";
+
+
+MValidQ // ClearAll; (*not sure it makes sense, why not MatchQ[expr, patt]?*)
+
+MValidQ[patt_]:=Function[expr, MValidate[expr, patt]];
+
+MValidQ[expr_, patt_]:=FreeQ[MValidateScan[expr,patt], MValidationResult[False, ___]];
+
+
+(* ::Subsection:: *)
 (*MInvalidContents*)
 
 

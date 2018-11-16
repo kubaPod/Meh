@@ -181,7 +181,7 @@ WindowMargins->{{Automatic, 572}, {79, Automatic}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
 Magnification:>1.4 Inherited,
-FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (November 4, 2018)",
+FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (November 13, 2018)",
 StyleDefinitions->"Default.nb"
 ]
 

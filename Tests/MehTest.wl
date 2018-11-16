@@ -434,7 +434,7 @@ $basicValidationTestFalse = {
 };
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MValidate*)
 
 
@@ -447,8 +447,33 @@ VerificationTest[
 
 VerificationTest[
   MValidate @@ $basicValidationTestFalse
+, Failure["Invalid", <|"MessageTemplate" :> MValidate::Invalid, "MessageParameters" -> {}, "InvalidContents" -> {{Key["a"], Key["c"]} -> MValidationResult[False, Integer], {Key["a"], Key["d"]} -> MValidationResult[False, Integer]}|>]
+, TestID -> "basic MValidate test false"
+]
+
+
+VerificationTest[
+  MValidate @@ $basicValidationTestFalse // #[[2,"InvalidContents"]]&
+, {{Key["a"], Key["c"]} -> MValidationResult[False, Integer], {Key["a"], Key["d"]} -> MValidationResult[False, Integer]}
+, TestID -> "basic MValidate invalid contents"
+]
+
+
+(* ::Subsection:: *)
+(*MValidQ*)
+
+
+VerificationTest[
+  MValidQ @@ $basicValidationTestTrue
+, True
+, TestID -> "basic MValidQ test true"
+]
+
+
+VerificationTest[
+  MValidQ @@ $basicValidationTestFalse
 , False
-, TestID -> "basic validation test false"
+, TestID -> "basic MValidQ test false"
 ]
 
 
@@ -472,7 +497,23 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+VerificationTest[
+  MInvalidContents[
+    $basicValidationTestTrue[[{1, 1, 1, 1}]]
+  , $basicValidationTestTrue[[{1, 1, 1, 1}]] /. Association -> KeyValuePattern @* List
+  ]
+, {}
+, TestID -> "validate scan for equal length lists"
+]
+
+
+MInvalidContents[
+    List @ $basicValidationTestTrue[[{1, 1, 1, 1}]]
+  , List @ $basicValidationTestTrue[[{1, 1, 1}]] /. Association -> KeyValuePattern @* List
+  ]
+
+
+(* ::Subsection::Closed:: *)
 (*MValidateByDefault*)
 
 

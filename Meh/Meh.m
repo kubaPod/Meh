@@ -714,17 +714,25 @@ $multiPattern = Verbatim /@ ( Repeated|RepeatedNull );
 
 MValidateScan[
   expr : {__}
-, { $multiPattern[kvp_KeyValuePattern,___]}]:=  MValidateScan[#,kvp]& /@ expr;
+, { $multiPattern[kvp_KeyValuePattern,___]}
+
+]:=  MValidateScan[#,kvp]& /@ expr;
+
+MValidateScan[  expr : {__}, patt : {__}] /; Length[expr] == Length[patt]:= 
+   MapThread[MValidateScan, {expr, patt}, 1]
 
 
 (*Generic case*)
+
+$FailedValidationPayloadFunction = Head[#]&
+
 MValidateScan[
   expr_
-, kvp_ (*: Except[_KeyValuePattern] *)
+, pattern_ (*: Except[_KeyValuePattern] *)
 ]:=  If[ 
-  MatchQ[expr, kvp]
+  MatchQ[expr, pattern]
 , MValidationResult[True]
-, MValidationResult[False, Head @ expr]
+, MValidationResult[False, $FailedValidationPayloadFunction[ expr, pattern]]
 ];
 
 

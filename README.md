@@ -2,14 +2,14 @@
 
 Control flow utilities.
 
-A simplified version of work presented by ``GeneralUtilities`*Failure*`` family of functions.
+It happens that for more complicated or interactive applications solutions offered by native `Messages` and related functions are not enough. 
+There was an attempt to address this problem by developers of ``GeneralUtilities` `` but it is still undocumented and not polished. 
 
-Points are:
+This package is meant to provide solutions for easier exceptions handling and keep it idiomatic/ natural to regular WL experience.
 
- - To have control as opposed to use an undocumented functionality
- - Syntax familiar for Failure/Messages
- - Concept of tagged failures and raw failures does not exist. 
-  You just throw whatever you want and if it matches Message/Failure syntax then Message/Failure will be assembled.
+It also comes with few minor utilities that I found to be used by me quite frequently.
+
+It is still under development, there is a brief [documentation in WIKI](https://github.com/kubaPod/Meh/wiki/Symbols-Guide)
 
 ## Installation
  
@@ -30,25 +30,39 @@ and then:
     Needs @ "MPM`"    
     MPM`MPMInstall["kubapod", "meh"]
     
-## Big picture
-
-It is mostly about syntactic sugar for `Catch/Throw` to cope well with `Messages/Failures`.
-
-Basic rules:
-
-- core symbols start with `M`: `MThrow`, `MFailureQ` etc. Sub-utilities do not e.g.: `MValidate`.
-- `MGenerate`, `MGenerateAll`, `MThrow`, `MThrowAll` have the same syntax with respect to Message/Failure related cases.  
-  - `-All` means that a `Message` will be issued too. That also implies only a valid message input can be used while simple `MThrow` can accept whatever input you give it.
-  - `Generate` just creates e.g. a `Failure` while `MThrow` throws is to a nearest enclosing `MCatch`.
-
-`MThrow` can take `Message` syntax with optional first element which will be a Failure's tag. 
+## Usage teaser
 
 ```Mathematica
-MCatch[     MThrow["500", General::invty, Method]    ]
+MCatch[
+  MThrowAll["500", General::appname, "1asd"]
+]
 ```
-> `Failure["500", <|"MessageTemplate" :> General::invty, "MessageParameters" -> {Method}|> ]`
-    
-Replace `MThrow` with `MThrowAll` and a message will be issued.
- 
-Below is a more detailed symbols guide:
 
+> `General::appname`: The name 1asd is not valid for the application. A valid name starts with a letter and is followed by letters and digits.
+
+> ```
+> Failure["500", <| "MessageTemplate" :> General::appname, "MessageParameters" -> {"1asd"}]]
+>  ```
+
+```Mathematica
+foo // ClearAll
+$fooPatt = KeyValuePattern[{"a" -> _Integer, "c" -> _String}];
+
+foo // MValidateByDefault[ $fooPatt ]
+
+foo[ in: $fooPatt]:= in["a"]
+
+foo @ <|"a" -> 1, "c" -> "c"|>
+
+foo @ <|"b" -> 1, "c" -> {1}|>
+```
+
+> `1`
+
+> `foo::InvalidArg`: Argument No. 1 has invalid structure at:<br>
+>	{Key[c]}	List <br>
+>	{Key[a]}	Missing[] <br>
+> It needs to match: <br>
+>	<|a -> _Integer, c -> _String|>
+
+> ```Failure[...]```

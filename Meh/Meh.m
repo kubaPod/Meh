@@ -33,7 +33,8 @@ ClearAll["`*", "`*`*"];
 Needs @ "GeneralUtilities`";
 
   
-  ToKeyValue;  OptionLookup;  NotebookAliveQ;
+  ToKeyValue;  SymbolToKeyName; SetFromValues; MergeNested;
+  OptionLookup;  NotebookAliveQ;
 
   Meh;
   
@@ -75,10 +76,29 @@ ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symb
 
 ToKeyValue // Attributes = {HoldAll, Listable};
 
-ToKeyValue // MFailByDefault;
+ToKeyValue[sym_Symbol]:= SymbolToKeyName[sym] -> sym;
 
-ToKeyValue[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..] -> sym;
 
+SetFromValues::usage = "SetFromValues[{sym1, sym2, ...}, object] sets sym1 = object['sym1']. If sym1 has Module like "<>
+  "postfix ..$nnn then the key will not contain it. ";
+
+SetFromValues // Attributes = {Listable, HoldAll};
+
+SetFromValues[sym_Symbol, object_] := sym = object @ SymbolToKeyName @ sym;
+
+
+
+SymbolToKeyName::usage = "SymbolToKeyName[symbol_] generates symbol's symbol name and trims '$..nnn' if present";
+
+SymbolToKeyName // Attributes = {HoldAll};
+
+SymbolToKeyName[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~~ DigitCharacter..];
+
+
+
+MergeNested::usage = "MergeNested[{associations..}] does what Merge[Identity] or Association do but in a recursive manner.";
+MergeNested[a : {__Association}] := Merge[a, MergeNested];
+MergeNested[a_List] := Last[a];
 
 
 
@@ -108,7 +128,7 @@ foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
 *)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Meh misc*)
 
 
@@ -168,7 +188,7 @@ OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like Optio
 OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[explicit,Options[function]],name];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Core*)
 
 
@@ -627,7 +647,7 @@ LogDialogProgressIndicator[v : True | False]:=LogDialogProgressIndicator[ $Curre
 LogDialogProgressIndicator[nb_NotebookObject, val_]:= CurrentValue[nb, {TaggingRules, "processing"}] = val;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Validation (beta)*)
 
 

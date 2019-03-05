@@ -420,7 +420,7 @@ VerificationTest[
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*StructValidation*)
 
 
@@ -558,7 +558,7 @@ VerificationTest[
 (*Utilities*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ToKeyValue*)
 
 
@@ -573,4 +573,73 @@ VerificationTest[
   Module[{x = 1, y = 2, z = "string"}, ToKeyValue @ {x,y,z}]
 , {"x" -> 1, "y" -> 2, "z" -> "string"}
 , TestID -> "95412c7c-42f7-46f8-a5a5-7fcc3819dd28"
+]
+
+
+(* ::Subsection::Closed:: *)
+(*SymbolToKeyName*)
+
+
+VerificationTest[
+  SymbolToKeyName[FrontEnd`FileBrowse]
+, "FileBrowse"
+, TestID -> "SymbolToKeyName[FrontEnd`FileBrowse]"
+]
+
+
+
+VerificationTest[
+  SymbolToKeyName[$test]
+, "$test"
+, TestID -> "SymbolToKeyName[$test]"
+]
+
+
+VerificationTest[
+  Module[{x},SymbolToKeyName[x]]
+, "x"
+, TestID -> "Module[{x},SymbolToKeyName[x]]"
+]
+
+
+(* ::Subsection::Closed:: *)
+(*SetFromValues*)
+
+
+VerificationTest[
+  Block[{foo}
+, foo//Options={"TEST"->2}
+; foo[OptionsPattern[]]:=Module[{TEST}, SetFromValues[TEST,OptionValue[foo,#]&];TEST]
+; {foo["TEST"->5], foo[]}
+]
+, {5, 2}
+, TestID -> "SetFromValues[TEST,OptionValue[foo,#]&]"
+]
+
+
+VerificationTest[
+  Block[{foo}
+, foo = <|"a"->1, "b"->2|>
+; Module[{a,b}, SetFromValues[{a,b}, foo]; {a,b}]
+]
+, {1, 2}
+, TestID -> "Module[{a,b}, SetFromValues[{a,b}, foo]; {a,b}]"
+]
+
+
+(* ::Subsection::Closed:: *)
+(*MergeNested*)
+
+
+VerificationTest[
+  Module[{peopleFacts}
+, peopleFacts = <|
+    "alice" -> <|age -> 29, shoeSize -> 7|>, 
+    bob -> <|age -> 27, sex -> male,  hair -> <|Color -> RGBColor[1, 0, 0]|>
+    |>
+  |>
+; MergeNested @ {peopleFacts, <|bob -> <|hair -> <|length -> 120|>|>|>}
+]
+, <|"alice" -> <|age -> 29, shoeSize -> 7|>, bob -> <|age -> 27, sex -> male, hair -> <|Color -> RGBColor[1, 0, 0], length -> 120|>|>|>
+, TestID -> "MergeNested"
 ]

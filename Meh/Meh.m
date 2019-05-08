@@ -213,6 +213,8 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
      So this will be handled by mHandle *)
   MFailureQ[_]=False;
 
+  MReturn[expr_]:=Return[expr,Module];
+
 
 (* ::Subsection::Closed:: *)
 (*MGenerateFailure; MGenerateAll*)

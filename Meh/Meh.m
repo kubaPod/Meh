@@ -183,13 +183,17 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 (*Function construction*)
 
 
-MFailByDefault::usage = "foo // MFailByDefault makes foo to issue a message and return a Failure when unknown input is provided.";
+MFailByDefault::usage = "MFailByDefault[symbol|context] adds definitions to issue a message and return a Failure when unknown input is provided.";
+
+MFailByDefault // Attributes = {Listable};
+
+MFailByDefault[context_String ? (StringEndsQ["`"]) ] :=  ToExpression[ Names[context<>"*"], InputForm, MFailByDefault]
 
 MFailByDefault[symbol_Symbol]:= (
   symbol::argpatt = Meh::argpatt
-; symbol[x___]:= MGenerateAll[symbol::argpatt, inputToSignature[symbol[x]]]
+  ; symbol[x___]:= MGenerateAll[symbol::argpatt, inputToSignature[symbol[x]]]
 );
-  
+
 
 
 OptionLookup::usage = "OptionLookup[option, function, {opts__}] works like OptionValue[option] but does not require to use OptionsPattern[{...}] for the function.";

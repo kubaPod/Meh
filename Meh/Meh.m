@@ -102,7 +102,7 @@ MergeNested[a_List, foo_:Last] := foo[a];
 
 TableToAssociation::usage = "TableToAssociation[{{headers...}, rows...}] returns <|row_i_1 -> <|headers -> row_i|>|>";
 
-TableToAssociation[data_List ? ArrayQ]:=
+TableToAssociation[data_List]:=
 Association @
 Map[ Function[row, row[[1]] -> AssociationThread[ First @ data -> row ] ] ] @
 Rest @

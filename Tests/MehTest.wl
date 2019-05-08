@@ -558,6 +558,17 @@ VerificationTest[
 (*Utilities*)
 
 
+(* ::Subsection:: *)
+(*TableToAssociation*)
+
+
+  VerificationTest[
+  TableToAssociation[{{"A","B"}, {"x", 1},{"y", 2}}]
+, <|"x" -> <|"A" -> "x", "B" -> 1|>, "y" -> <|"A" -> "y", "B" -> 2|>|>
+, TestID -> "TableToAssociation"
+]
+
+
 (* ::Subsection::Closed:: *)
 (*ToKeyValue*)
 
@@ -627,7 +638,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MergeNested*)
 
 
@@ -643,3 +654,6 @@ VerificationTest[
 , <|"alice" -> <|age -> 29, shoeSize -> 7|>, bob -> <|age -> 27, sex -> male, hair -> <|Color -> RGBColor[1, 0, 0], length -> 120|>|>|>
 , TestID -> "MergeNested"
 ]
+
+
+

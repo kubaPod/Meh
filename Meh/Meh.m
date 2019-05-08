@@ -32,9 +32,9 @@ ClearAll["`*", "`*`*"];
 
 Needs @ "GeneralUtilities`";
 
-  
-  ToKeyValue;  SymbolToKeyName; SetFromValues; MergeNested;
-  OptionLookup;  NotebookAliveQ;
+
+ToKeyValue;  SymbolToKeyName; SetFromValues; MergeNested;
+OptionLookup;  NotebookAliveQ; TableToAssociation;
 
   Meh;
   
@@ -97,8 +97,16 @@ SymbolToKeyName[sym_Symbol]:= StringTrim[SymbolName @ Unevaluated @ sym, "$".. ~
 
 
 MergeNested::usage = "MergeNested[{associations..}] does what Merge[Identity] or Association do but in a recursive manner.";
-MergeNested[a : {__Association}] := Merge[a, MergeNested];
-MergeNested[a_List] := Last[a];
+MergeNested[a : {__Association}, foo_:Last] := Merge[a, MergeNested[#, foo]&];
+MergeNested[a_List, foo_:Last] := foo[a];
+
+TableToAssociation::usage = "TableToAssociation[{{headers...}, rows...}] returns <|row_i_1 -> <|headers -> row_i|>|>";
+
+TableToAssociation[data_List ? ArrayQ]:=
+Association @
+Map[ Function[row, row[[1]] -> AssociationThread[ First @ data -> row ] ] ] @
+Rest @
+data
 
 
 

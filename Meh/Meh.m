@@ -68,7 +68,7 @@ Begin["`Private`"];
 (* Implementation code*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Association Utilities*)
 
 
@@ -504,6 +504,41 @@ failureToPayload[ Failure[ tag_, asso_ ] ] := <|
   KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso
 , "MessageList" -> ToString @ $MessageList  
 |>;
+
+
+(* ::Section:: *)
+(*Monitoring*)
+
+
+$insideMessageMonitor = False;
+
+
+messageString[Hold[Message[msg:MessageName[head_,name_],args___],_]]:=StringJoin[
+ToString@Unevaluated@head,
+"::",
+name,
+": ",
+ToString[StringForm[msg/.Messages[head],args]]
+];
+
+
+WithMessageMonitor // Attributes = {HoldRest};
+
+WithMessageMonitor[foo_]/;Not@TrueQ@$insideMessageMonitor:=Function[expr,
+WithMessageMonitor[foo,expr],
+HoldAll
+]
+
+WithMessageMonitor[foo_,expr_]/;Not@TrueQ@$insideMessageMonitor:=Block[{$insideMessageMonitor=True},
+Internal`HandlerBlock[
+{ "Message",foo[messageString@#,#]&},
+expr
+]
+]
+
+WithMessageMonitor[foo_]:=Identity;
+WithMessageMonitor[foo_,expr_]:=expr;
+
 
 
 (* ::Section::Closed:: *)

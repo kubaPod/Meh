@@ -114,6 +114,8 @@ data
 (*FrontEnd Utilities*)
 
 
+NotebookAliveQ::usage = "NotebookAliveQ[nbObj] returns True is a given nbObj is still available (e.g. it was not closed).";
+
 NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
 NotebookAliveQ[___]:=False;
 

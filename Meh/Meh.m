@@ -35,6 +35,7 @@ Needs @ "GeneralUtilities`";
 
 ToKeyValue;  SymbolToKeyName; SetFromValues; MergeNested;
 OptionLookup;  NotebookAliveQ; TableToAssociation;
+MainLinkSubmit;
 
   Meh;
   
@@ -118,6 +119,26 @@ NotebookAliveQ::usage = "NotebookAliveQ[nbObj] returns True is a given nbObj is 
 
 NotebookAliveQ[nb_NotebookObject]:=  NotebookInformation[nb] =!= $Failed;
 NotebookAliveQ[___]:=False;
+
+
+MainLinkSubmit::usage = "MainLinkKSubmit[procedure] allows you to submit a non preemptive call from a preemptive one "<>
+    "(e.g. from scheduled task). Notebooks based front end environment is required.";
+
+MainLinkSubmit::noFE = "MainLinkSubmit can only be used with a notebook-based front end.";
+
+MainLinkSubmit // Attributes = {HoldAll};
+
+MainLinkSubmit[procedure_] /; TrueQ @ $Notebooks := MessageDialog[
+  Dynamic[
+    NotebookClose[]; procedure
+    , SynchronousUpdating->False
+  ]
+  , CellContext -> $Context
+  , Visible     -> False
+];
+
+
+MainLinkSubmit[procedure_] /; Not @ TrueQ @ $Notebooks := MGenerateAll[MainLinkSubmit::noFE];
 
 
 (*TODO: absolute options

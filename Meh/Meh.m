@@ -38,28 +38,30 @@ OptionLookup;  NotebookAliveQ; TableToAssociation;
 MainLinkSubmit;
 
   Meh;
-  
+
   MFailureQ;  MGenerateFailure;  MGenerateAll;
-  
+
   MCatch;  MThrow;  MThrowAll;
-  
+
   MHandleResult;    MOnFailure;  MThrowOnFailure;  MRetryOnFailure;
-  
+
   MFailByDefault;
-  
+
   MFailureToHTTPResponse;
-  
+
   MCheckValue;
-  
+
   MExpect;
-  
+
   APIMessage;  AmbientCheck;  PrintLoggerBlock;  CloudTopLevelFunction;  CloudDecorator;
-  
+
   MValidateByDefault;  MValidateScan;  MValidationResult;  MValidate;  MInvalidContents; MValidQ;
-  
+
   LogDialogBlock;  LogDialog;  LogWrite; LogDialogProgressIndicator;
-  
-  
+
+
+  es6Decorate;  es6ExtractPattern;  es6ExtractSymbols; es6ExtractValues; $ES6asso;
+
 
 Begin["`Private`"];
 
@@ -78,6 +80,9 @@ ToKeyValue::usage = "ToKeyValue[symbol] is a small utility that generates \"symb
 ToKeyValue // Attributes = {HoldAll, Listable};
 
 ToKeyValue[sym_Symbol]:= SymbolToKeyName[sym] -> sym;
+
+ToKeyValue[Association[spec__Symbol] ]:= Association @ ToKeyValue @ {spec}
+
 
 
 SetFromValues::usage = "SetFromValues[{sym1, sym2, ...}, object] sets sym1 = object['sym1']. If sym1 has Module like "<>
@@ -108,6 +113,84 @@ Association @
 Map[ Function[row, row[[1]] -> AssociationThread[ First @ data -> row ] ] ] @
 Rest @
 data
+
+
+es6Decorate//Attributes={HoldAll};
+
+es6Decorate[f_Symbol]:=(
+
+  f /: SetDelayed[
+    f[ Verbatim[Association][spec__] ]
+    , rhs_
+  ]:=With[
+    { pattern    = es6ExtractPattern[spec]
+      , heldSymbols = es6ExtractSymbols[spec]
+      , heldValues  = es6ExtractValues[spec]
+    }
+    , es6Decorate[f, rhs, pattern, heldSymbols, heldValues]
+  ]
+);
+
+es6Decorate[foo_Symbol,rhs_,pattern_, Hold[symbols___], Hold[values___]]:=(
+  SetDelayed @@ Hold[
+    foo[$ES6asso:pattern],
+    Block[{symbols}, Unevaluated[rhs] /. Thread[{symbols}->{values}] ]
+  ]
+)
+
+es6ExtractPattern[spec__]:= KeyValuePattern[
+  es6PatternToPattern /@ {spec}
+]
+
+es6ExtractSymbols[spec__]:= Apply[Join][
+  es6PatternToHeldSymbol /@ {spec}
+]
+
+es6ExtractValues[spec__]:= Apply[Join][
+  es6PatternToHeldValue /@ {spec}
+]
+
+With[
+  { vPatt = Verbatim[Pattern]
+    , vOpt  = Verbatim[Optional]
+    , hPatt = HoldPattern
+  }
+  ,
+
+  (* a_ a_H *)
+  es6PatternToPattern[    hPatt @ vPatt[s_Symbol, b_Blank] ] := symbolName[s] -> b;
+  (* "a" \[Rule] b_ *)
+  es6PatternToPattern[    sym_String -> Except[_Optional] ]:= sym -> Blank[];
+  es6PatternToPattern[ ___ ] = Sequence[];
+
+
+
+  es6PatternToHeldSymbol[ hPatt @ vPatt[s_Symbol, _]      ] := Hold[s];
+  es6PatternToHeldSymbol[ hPatt @ vOpt[p_, _]      ] := es6PatternToHeldSymbol @ p;
+  es6PatternToHeldSymbol[ _String -> p_ ]:= es6PatternToHeldSymbol @ p;
+  es6PatternToHeldSymbol[ ___ ]:=Hold[];
+
+
+
+  (* s_ ==> ass["s"] *)
+  es6PatternToHeldValue[  hPatt @ vPatt[s_Symbol, _]      ] := With[{sym = symbolName@s}
+    , Hold @ $ES6asso @ sym
+  ];
+  (* s_:default ==> Lookup[asso, "s", default] *)
+  es6PatternToHeldValue[  hPatt @ vOpt[vPatt[s_Symbol, _Blank], default_] ] := With[{sym = symbolName@s}
+    , Hold @ Lookup[$ES6asso, sym, default]
+  ];
+  (* S \[Rule] s_ *)
+  es6PatternToHeldValue[ key_ -> hPatt @ vPatt[_, _Blank] ]:= Hold @ $ES6asso @ key;
+
+  (* S \[Rule] s_:default *)
+  es6PatternToHeldValue[ key_ -> hPatt @ vOpt[vPatt[_, _Blank], default_] ]:=
+    Hold @ Lookup[$ES6asso, key, default];
+  es6PatternToHeldValue[  ___     ] := Hold[];
+];
+
+symbolName = Function[s, SymbolName @ Unevaluated[s], HoldFirst];
+
 
 
 
@@ -164,19 +247,19 @@ foo[7,AnotherOption\[Rule]1] (*no message, yes!*)
 
 
   Meh::usage = "Meh is a symbol that stores common messages used by Meh`";
-  
+
   Meh::match = "Unexpected error, expression with head `` does not match ``.";
-  
-  Meh::argpatt = "There are no rules associated with signature ``."; 
-  
-  
+
+  Meh::argpatt = "There are no rules associated with signature ``.";
+
+
   Meh::invInput = "Invalid input for ``";
 
   Meh::InvalidArg = StringRiffle[
     {"Argument No. `` has invalid structure at:", "``", "It needs to match:","``"},
     "\n"
   ];
-  
+
   Meh::NoArg = "Function called without arguments.";
 
   Meh::invStructHttp = StringRiffle[
@@ -196,7 +279,7 @@ inputToSignature[head_[spec___]]:= ToString[#, OutputForm]& @ StringForm[
 ];
 
 
-(*TODO: 
+(*TODO:
 
   ThrowOnMessage
 *)
@@ -232,7 +315,7 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
 
 
   MFailureQ[ _Failure | $Canceled | $Aborted | $Failed ]=True;
-  (*Oone could think of an unevaluated pattern being here to but a) it adds complexity b) should not be enforced in case of symbolic wrappers/constructors. 
+  (*Oone could think of an unevaluated pattern being here to but a) it adds complexity b) should not be enforced in case of symbolic wrappers/constructors.
      So this will be handled by mHandle *)
   MFailureQ[_]=False;
 
@@ -253,9 +336,9 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
   - handle additional payload
   - handle custom tags
   - handle messages
-  
+
   Full signature: MThrow[tag_String, msg_MessageName, args: ___ | _Association, payload___Rule ]:=
-*)  
+*)
 
  (* quick temp messages, discouraged ;) *)
  (* MThrow[tempMsg:_String, args___]         := MThrow @ MGenerateFailure["dev", tempMsg, {args} ];
@@ -268,13 +351,13 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
 (*misc*)
 
 
-  MGenerateFailure // Attributes = { HoldAll };  
-  
+  MGenerateFailure // Attributes = { HoldAll };
+
   MGenerateAll // Attributes = { HoldAll };
-  
-  MGenerateFailure::usage = "MGenerateFailure[spec___] generates a Failure if spec matches special syntax. " <> 
+
+  MGenerateFailure::usage = "MGenerateFailure[spec___] generates a Failure if spec matches special syntax. " <>
     "Else, single argument, returns it. Else, for multiple arguments generates a failure + message.";
-    
+
   MGenerateFailure::argpatt = MGenerateAll::argpatt = Meh::argpatt;
 
 
@@ -282,16 +365,16 @@ OptionLookup[name_,function_,explicit_List]:=OptionValue[function,FilterRules[ex
 (*MGenerateFailure: message/failure like syntactic sugar*)
 
 
-MGenerateFailure[ 
-    msg  : MessageName[head : _Symbol, name : _String], 
-    args : ___ 
+MGenerateFailure[
+    msg  : MessageName[head : _Symbol, name : _String],
+    args : ___
   ]:= MGenerateFailure[name, msg, args];
 
 
-MGenerateFailure[ 
-    tag     : _String | _Symbol, 
-    msg     : HoldPattern[MessageName[head:_Symbol, name:_String]], 
-    args    : _Association     
+MGenerateFailure[
+    tag     : _String | _Symbol,
+    msg     : HoldPattern[MessageName[head:_Symbol, name:_String]],
+    args    : _Association
   ] :=  MGenerateFailure[tag, msg, args, <||>];
 
 
@@ -307,13 +390,13 @@ MGenerateFailure[
   ]:=Failure[
     tag
   , <|"MessageTemplate" :> templ, "MessageParameters" -> args, payload|>
-  ];  
+  ];
 
 
 (* this needs to be after (args    : _List | _Association) one because of specificity *)
-MGenerateFailure[ 
-    tag     : _String | _Symbol , 
-    msg     : HoldPattern[ MessageName[head:_Symbol, name:_String]], 
+MGenerateFailure[
+    tag     : _String | _Symbol ,
+    msg     : HoldPattern[ MessageName[head:_Symbol, name:_String]],
     args    : ___,
     payload : _Association : <||>
   ]:= MGenerateFailure[tag, msg, {args}, payload ];
@@ -347,14 +430,14 @@ input : MGenerateFailure[whateverElse__]:= (
   Message[MGenerateFailure::argpatt, inputToSignature[input] ]
 ; Failure["argpatt"
   , <|"Message" -> ToString @ StringForm[MGenerateFailure::argpatt, inputToSignature[input] ]|>
-  ]  
+  ]
 );
 
 input : MGenerateAll[whateverElse__]:= (
   Message[MGenerateAll::argpatt, inputToSignature[input] ]
 ; Failure["argpatt"
   , <|"Message" -> ToString @ StringForm[MGenerateAll::argpatt, inputToSignature[input] ]|>
-  ]  
+  ]
 );
 
 
@@ -362,16 +445,16 @@ input : MGenerateAll[whateverElse__]:= (
 (*MThrow / MCatch*)
 
 
-  $MehTag = "MEH";    
+  $MehTag = "MEH";
 
 
   MCatch = Function[expr, Catch[expr, $MehTag], HoldAllComplete];
 
 
-  MThrow // Attributes = {HoldAll};  
+  MThrow // Attributes = {HoldAll};
 
 
-  MThrow[ f : Except[_MessageName] ]:=Throw[f, $MehTag ];  
+  MThrow[ f : Except[_MessageName] ]:=Throw[f, $MehTag ];
 
 (*
 
@@ -393,8 +476,8 @@ input : MGenerateAll[whateverElse__]:= (
 
 
   MThrowAll // Attributes = {HoldAll};
-  
-  MThrowAll[spec___]:= MThrow @ MGenerateAll[spec]; 
+
+  MThrowAll[spec___]:= MThrow @ MGenerateAll[spec];
 
 
 (* ::Section::Closed:: *)
@@ -407,9 +490,9 @@ input : MGenerateAll[whateverElse__]:= (
 
 MHandleResult::usage = "MHandleResult[(patt -> handler)..] creates an operator:" <>
   "Function[ input, Switch[input, patt, handler, .., _?MFailureQ, MThrow, _, Identity] @ input].";
-  
-  
-  
+
+
+
 MHandleResult[rules___]:=Function[
   expr
 , Switch[expr
@@ -435,7 +518,7 @@ MHandleResult[rules___]:=Function[
 
 MOnFailure::usage = "expr // MOnFailure[foo] does foo[expr] /; MFailureQ[expr]";
 
-MOnFailure[foo_][res_?MFailureQ]:= foo @ res; 
+MOnFailure[foo_][res_?MFailureQ]:= foo @ res;
 MOnFailure[foo_][res_]:= res;
 
 
@@ -488,7 +571,7 @@ MFailureToHTTPResponse// ClearAll;
 
 (*TODO: failure generate? *)
 
-MFailureToHTTPResponse[ failure:($Failed|$Aborted|$Canceled) ]:= 
+MFailureToHTTPResponse[ failure:($Failed|$Aborted|$Canceled) ]:=
   MFailureToHTTPResponse @ Failure["500","MessageTemplate" -> ToString[failure]];
 
 
@@ -499,33 +582,33 @@ MFailureToHTTPResponse[
     , asso_
     ]
   ]:=With[
-  { payload = If[# === <||>, <||>, "Payload" -> Compress @ #]& @ KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso 
+  { payload = If[# === <||>, <||>, "Payload" -> Compress @ #]& @ KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso
   }
 , HTTPResponse[
     ExportString[
-      <|  
+      <|
         "Message" -> FailureString @ f
-      , "Payload" -> failureToPayload @ f 
+      , "Payload" -> failureToPayload @ f
       |>
-    , "RawJSON", "Compact"->True 
+    , "RawJSON", "Compact"->True
     ]
   , <|
       "StatusCode" -> failureToStatusCode @ f
-    , "ContentType"->"application/json" 
+    , "ContentType"->"application/json"
     |>
   , CharacterEncoding -> None (*because RawJSON already did it*)
   ]
 ];
 
 
-failureToStatusCode[ Failure[ tag_String?(StringMatchQ[DigitCharacter..]) , asso_ ] ]:= tag; 
+failureToStatusCode[ Failure[ tag_String?(StringMatchQ[DigitCharacter..]) , asso_ ] ]:= tag;
 failureToStatusCode[ _?MFailureQ ]:= "500";
 failureToStatusCode // MFailByDefault;
 
 
 failureToPayload[ Failure[ tag_, asso_ ] ] := <|
   KeyDrop[{"MessageTemplate","MessageParameters"}] @ asso
-, "MessageList" -> ToString @ $MessageList  
+, "MessageList" -> ToString @ $MessageList
 |>;
 
 
@@ -580,7 +663,7 @@ CreateLogDialog::usage = "CreateLogDialog[tag_., opts___] creates a new log dial
 
 CreateLogDialog // Options = {
   "Header" -> ""
-, "ProgressIndicator" -> Automatic  
+, "ProgressIndicator" -> Automatic
 };
 
 CreateLogDialog[opts___Rule]:= CreateLogDialog[ $CurrentLogTag, opts ];
@@ -592,7 +675,7 @@ CreateLogDialog[tag_String, opts___Rule]:= Module[
   }
 
 , dockedCells = {Cell[ BoxData @ ToBoxes @ Grid[
-    {{ 
+    {{
        Style[header, "Subsection"]
      , PaneSelector[
            { True -> progressIndicator
@@ -603,27 +686,27 @@ CreateLogDialog[tag_String, opts___Rule]:= Module[
          , ImageMargins -> 0
          , FrameMargins -> 0
          , Alignment    -> {Right, Center}
-         
+
          ]
      }}, Alignment->{Left,Center}]
    , Background-> GrayLevel@.9
    , CellFrameMargins->15
-   ]  
+   ]
  }
- 
+
 
 ; LogDialog[tag] = CreateDocument[
     {}
   , StyleDefinitions     -> "Dialog.nb"
-  , Sequence @@ FilterRules[{opts}, {Options[CreateDocument], BaseStyle -> {}}]  
+  , Sequence @@ FilterRules[{opts}, {Options[CreateDocument], BaseStyle -> {}}]
   , DockedCells          -> dockedCells
   , TaggingRules         -> {"LogDialog" -> True, "processing" -> True, "logTag" -> tag}
   , CellLabelPositioning -> Automatic
   , ShowCellLabel        -> True
   , WindowElements       -> {"VerticalScrollBar"}
-  
+
   , WindowSize           -> 600{1, 1/GoldenRatio}
-  , WindowTitle          -> "Progress dialog"  
+  , WindowTitle          -> "Progress dialog"
   ]
 ];
 
@@ -646,11 +729,11 @@ LogDialog[tag_String]:= Module[{candidates}
 ; Switch[candidates
   , {}
   , MGenerateFailure[LogDialog::doesNotExist, tag]
-  
+
   , {__NotebookObject}
   , If[Length @ candidates > 1, Message[LogDialog::duplicatedDialogs, tag]]
   ; LogDialog[tag] = First @ candidates
-  
+
   ]
 ];
 
@@ -668,20 +751,20 @@ LogDialogBlock::usage = "LogDialogBlock[logTag_., opts][expr] makes sure that a 
 
 LogDialogBlock // Options = {
   "StopProgressIndicator" -> True
-, "AutoClose" -> False  
+, "AutoClose" -> False
 };
 
 LogDialogBlock[ patt___Rule ]:=LogDialogBlock[ $CurrentLogTag, patt];
 
 LogDialogBlock[tag_String, opts___Rule]:= With[
-  { 
+  {
     stopIndicator = TrueQ @ OptionLookup["StopProgressIndicator", LogDialogBlock, {opts}  ]
   , autoClose     = OptionLookup["AutoClose", LogDialogBlock, {opts}  ]
   }
 , Function[
     expression
   , Block[ {$CurrentLogDialog, $CurrentLogTag = tag}
-    , If[ 
+    , If[
         Not @ NotebookAliveQ @ LogDialog[tag]
       , CreateLogDialog[tag, opts]
       ]
@@ -692,7 +775,7 @@ LogDialogBlock[tag_String, opts___Rule]:= With[
       ; res
       ]
     ]
-  , HoldAll  
+  , HoldAll
   ]
 ];
 
@@ -739,11 +822,11 @@ MValidateByDefault[structPattern_, argPost_Integer : 1]:= Function[function, MVa
 
 MValidateByDefault[function_Symbol, structPattern_, argPos : _Integer : 1]:=(
   function::NoArg = Meh::NoArg;
-  function::InvalidArg = Meh::InvalidArg;  
-  
+  function::InvalidArg = Meh::InvalidArg;
+
   (*we don't want additional function[]:= downvalue in case there already is one*)
   function[input___] /; Length[{input}] < 1 :=MGenerateAll[ "400", function::NoArg, function  ];
-  
+
   function[input___]:= MGenerateAll[
       "400"
     , function::InvalidArg
@@ -779,13 +862,13 @@ MValidateScan[
 , pattern : _KeyValuePattern
 ]:=  Module[
   { patternAssociation = Association @@ pattern }
-, Merge[ 
-    { 
+, Merge[
+    {
       KeyTake[Keys[patternAssociation]] @ expr (* we don't care about additional keys now*)
     , patternAssociation
     }
   , Apply[MValidateScan]
-  ]  
+  ]
 ];
 
 
@@ -810,7 +893,7 @@ MValidateScan[
 
 ]:=  MValidateScan[#,kvp]& /@ expr;
 
-MValidateScan[  expr : {__}, patt : {__}] /; Length[expr] == Length[patt]:= 
+MValidateScan[  expr : {__}, patt : {__}] /; Length[expr] == Length[patt]:=
    MapThread[MValidateScan, {expr, patt}, 1]
 
 
@@ -821,7 +904,7 @@ $FailedValidationPayloadFunction = Head[#]&
 MValidateScan[
   expr_
 , pattern_ (*: Except[_KeyValuePattern] *)
-]:=  If[ 
+]:=  If[
   MatchQ[expr, pattern]
 , MValidationResult[True]
 , MValidationResult[False, $FailedValidationPayloadFunction[ expr, pattern]] (*TODO: make this symbol na option*)
@@ -894,7 +977,7 @@ MCheckValue::usage = "Not fully intergrated. MCheckValue[expr, test, action] doe
 MCheckValue // Attributes = {HoldAll};
 
 
-MCheckValue[expr_, test_, action_]:=If[ 
+MCheckValue[expr_, test_, action_]:=If[
   Not @ TrueQ @ test @ expr
 , action
 , expr
@@ -932,10 +1015,10 @@ MCheckValue[
     The idea is to have a mini exceptions handling framework,
     together with logging
     and what we want to see at the end is a HTTPResponse not a Failure
-    
+
     So the way to go is to use API/Form procedure template like so:
-    
-    
+
+
     APIFunction[
       { stuff }
     , PrintLoggerBlock @                 (*1*)
@@ -946,18 +1029,18 @@ MCheckValue[
       , Print["calculating something"];1+1/0;Print["DEBUG", "done"];123
       ] &
     ]
-    
+
     1. PrintLoggerBlock instantiates a log file in {object/path}<>LOG/{dateString}.txt
        and log all Print or messages there. See def for more info.
-      
+
     2. At the end we are expecting an HTTPResponse but if Failure occured we convert it to HTTResponse
-    
+
     3. catches any ThrowFailure or MThrow but we use tagged because the tag will contain
        status code to use by MFailureToHTTPResponse
-       
+
     4. Like Check but it throws 'unknown error' with 500 tag on any message. See def for more syntax.
-    
-    
+
+
     Furthermore, replacing 1+2 with PrintBlock (tbd) leaves us with a method perfectly suited for desktop flow.
 *)
 
@@ -972,7 +1055,7 @@ MCheckValue[
   APIMessage::jsonInput = "Failed to parse input as a JSON object";
   APIMessage::err = "Unexpected error";
   APIMessage::src = "Source file is missing: ``";
-  
+
 
 
 (* ::Subsection::Closed:: *)
@@ -980,11 +1063,11 @@ MCheckValue[
 
 
   CloudTopLevelFunction::usage = "CloudTopLevelFunction is a wrapper for a top level cloud side functions. You may want to add AmbientCheck before.";
-  
+
   CloudTopLevelFunction // Attributes = {HoldAll};
-  
+
   CloudTopLevelFunction[opts__Rule]:=Function[proc, CloudTopLevelFunction[proc, opts], HoldAll];
-  
+
   CloudTopLevelFunction[proc:Except[_Rule], opts___?OptionQ]:= PrintLoggerBlock[
     MOnFailure[MFailureToHTTPResponse] @ MCatch @ proc
   , opts
@@ -1047,19 +1130,19 @@ MCheckValue[
   PrintLoggerBlock[
     expr:Except[_Rule]
   , OptionsPattern[]
-  
+
   ] /; $CloudEvaluation :=
   Module[
   {logFile, logStream, log, path, res, timeMark, finalLogFunction }
-  
+
   , timeMark = AbsoluteTime[]
   ; logFile = OptionValue["LogFile"] /. Automatic :> cloudObjectLogFile[$EvaluationCloudObject]
   ; finalLogFunction = OptionValue["ResponseLogFunction"]
-    
+
   ; If[Not @ FileExistsQ @ #, CloudPut["", #]]& @ logFile
-  
+
   ; logStream = OpenAppend[logFile,FormatType->(OutputForm),PageWidth->Infinity]
-  
+
   ; log[type:"INFO"|"DEBUG"|"MESSAGE":"INFO", msg__]:=Write[
       logStream
     , DateString[{"Time",".","Millisecond"," "}]
@@ -1067,23 +1150,23 @@ MCheckValue[
     , StringPadRight[type,10]
     , StringRiffle[ToString[#,InputForm]&/@{msg}, " "]
     ]
-  
+
   ; Switch[ OptionValue["LogHeader"]
     , False, {}
     , Automatic, AddAutoLogHeader[log, logStream]
     , _, log[OptionValue["LogHeader"]]
     ]
-  
-  
-  
+
+
+
   ; Block[{Print = log, Echo, messageString }
     , Print = log
     ; Echo[input_, label_: "", pipe_: Identity] := CompoundExpression[
         Print["INFO", label /. "" :> (##&[]), pipe@input]
       , input
       ]
-    ; messageString[Hold[Message[msg:MessageName[head_,name_],args___],_]]:=ToString[StringForm[msg/.Messages[head],args]]  
-    
+    ; messageString[Hold[Message[msg:MessageName[head_,name_],args___],_]]:=ToString[StringForm[msg/.Messages[head],args]]
+
     ; Internal`HandlerBlock[ (*we could add to $Messages or $Output but then we can't control headers*)
       { "Message"
       , If[Last[#]
@@ -1104,14 +1187,14 @@ MCheckValue[
     , log[ StringTemplate["CloudObject: ``"]@$EvaluationCloudObject]
     , log[ StringTemplate["Requester:   ``"]@$RequesterWolframID]
     , Write[logStream,  ""]
-    
+
     ];
-  
+
     cloudObjectLogFile[cloudObj_]:= Module[{path}
     , Needs["CloudObject`"]
     ; path = CloudObjectInformation[$EvaluationCloudObject,"Path"]
     ; path = If[StringQ @ #, FileNameDrop[#,1], "logs/general.txt"]& @ path
-  
+
     ; StringTemplate["``_logs/``/``.txt"][
         path
       , DateString["ISODate"]

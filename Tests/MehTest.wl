@@ -559,6 +559,43 @@ VerificationTest[
 
 
 (* ::Subsection:: *)
+(*ES6*)
+
+
+ClearAll[foo]
+foo//es6Decorate
+foo[<|
+        a_,
+        b_Integer,
+  "F" -> f_,
+        g_:10,
+  "J" -> j_:1
+|>
+]:={a,b,f,g,j}
+
+
+VerificationTest[
+  foo@<|"b"->2,"a"->1,"F"->3|>
+, {1, 2, 3, 10, 1}
+, TestID -> "foo@<|\"b\"->2,\"a\"->1,\"F\"->3|>"
+]
+
+
+VerificationTest[
+  foo@<|"b"->2,"a"->1,"F"->3,"g"->100|>
+, {1, 2, 3, 100, 1}
+, TestID -> "foo@<|\"b\"->2,\"a\"->1,\"F\"->3,\"g\"->100|>"
+]
+
+
+VerificationTest[
+  foo@<|"b"->2.2,"a"->1,"F"->3|>
+, foo[<|"b" -> 2.2, "a" -> 1, "F" -> 3|>]
+, TestID -> "foo@<|\"b\"->2.2,\"a\"->1,\"F\"->3|>"
+]
+
+
+(* ::Subsection::Closed:: *)
 (*TableToAssociation*)
 
 
@@ -638,7 +675,7 @@ VerificationTest[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MergeNested*)
 
 
